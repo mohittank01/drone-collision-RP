@@ -73,11 +73,11 @@ vector<string> CSVData(string FilePath, int ldh){
   return data;  
 }
 
-vector<string> ColumnSelect(vector<string> aircraft, int column_no, int ldh){
-  vector<string> column;
+vector<double> ColumnSelect(vector<string> aircraft, int column_no, int ldh){
+  vector<double> column;
   
   for(int i = 0; i < aircraft.size() / ldh; ++i){
-    column.push_back(aircraft[(i*ldh) + column_no]);
+    column.push_back(stod(aircraft[(i*ldh) + column_no]));
   }
   
   return column;
@@ -92,7 +92,7 @@ int main(){
   vector<string> data;
   vector<string> single_aircraft;
   vector<int> aircraft_index;
-  vector<string> longitude_vector;
+  vector<double> longitude_vector;
   string line;
   string element;
 
@@ -120,5 +120,4 @@ int main(){
   
   // Identify longitude vector as a test
   longitude_vector = ColumnSelect(single_aircraft, longitude, ldh);
-   
  }
