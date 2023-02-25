@@ -48,49 +48,77 @@ vector<string> SingleAircraft(vector<string> main_data, vector<int> aircraft_ind
   return single_aircraft;
 }
 
+vector<string> CSVData(string FilePath, int ldh){
+  ifstream csv;
 
-int main(){
-  
-  // Open csv file for DEPARTURES
-  string FilePath = "TAKEOFF_UTM_DEPART_A320 LHR time - 2017-06-30 04-00 to 2017-06-30 23-45.csv";
-  ifstream departures;
+  csv.open(FilePath);
 
-  departures.open(FilePath);
-
-  // TESTING IF FILE IS OPENED CORRECTLY
-  if (departures.fail()) {
+  if (csv.fail()) {
     cout << "ERROR - Failed to open " << FilePath << endl;
-    return(0);
   }
 
-  // Number of Columns
-  int ldh = 22;
-  // Callsign column number
-  int callsign = 3;
-
   vector<string> data;
-  vector<string> single_aircraft;
-  vector<int> aircraft_index;
   string line;
   string element;
   
   // Seperating line by line and then element by element 
-  while(getline(departures, line)){
+  while(getline(csv, line)){
     stringstream new_line(line);
     while (getline(new_line, element, ',')){
       data.push_back(element);
     }
   }
+  csv.close();
+
+  return data;  
+}
+
+vector<string> ColumnSelect(vector<string> aircraft, int column_no, int ldh){
+  vector<string> column;
+  
+  for(int i = 0; i < aircraft.size() / ldh; ++i){
+    column.push_back(aircraft[(i*ldh) + column_no]);
+  }
+  
+  return column;
+}
+
+
+int main(){
+  
+  // Open csv file for DEPARTURES
+  string FilePath = "TAKEOFF_UTM_DEPART_A320 LHR time - 2017-06-30 04-00 to 2017-06-30 23-45.csv";
+  
+  vector<string> data;
+  vector<string> single_aircraft;
+  vector<int> aircraft_index;
+  vector<string> longitude_vector;
+  string line;
+  string element;
+
+  // Number of Columns
+  int ldh = 22;
+  // Callsign column number
+  int callsign = 3;
+  // Longitude column number
+  int longitude = 14;
+  // Latitude column number
+  int latitude = 13;
+  // Altitude column number 
+  int altitude = 2;
+  // Groundspeed column number
+  int groundspeed = 8;
+
+  // Obtaining data from csv data FilePath
+  data = CSVData(FilePath,ldh);
   
   // Finds the index in the data array for the aircraft indexes
   aircraft_index = AircraftIndex(data, ldh);
-  
-  // Can loop over a certian number of aircrafts - Prints them to the terminal each loop
-  for (int i = 0; i < aircraft_index.size(); ++i){
-    single_aircraft = SingleAircraft(data, aircraft_index, i);
-    PrintAircraft(single_aircraft, ldh);
-  }
-  
-  departures.close();
 
+  // Identify a single aircraft 
+  single_aircraft = SingleAircraft(data, aircraft_index, 0);
+  
+  // Identify longitude vector as a test
+  longitude_vector = ColumnSelect(single_aircraft, longitude, ldh);
+   
  }
