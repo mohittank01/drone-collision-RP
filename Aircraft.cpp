@@ -102,11 +102,13 @@ void Aircraft::ColumnSelect(int column_no, double* column_pointer){
 
 void Aircraft::Vector_Allocation(){
     SingleAircraft();
+    
+    Vector_length = Single_Aircraft_size/TotalCols;
 
-    longitude_vector = new double[Single_Aircraft_size/TotalCols];
-    latitude_vector = new double[Single_Aircraft_size/TotalCols];
-    altitude_vector = new double[Single_Aircraft_size/TotalCols];
-    groundspeed_vector = new double[Single_Aircraft_size/TotalCols];
+    longitude_vector = new double[Vector_length];
+    latitude_vector = new double[Vector_length];
+    altitude_vector = new double[Vector_length];
+    groundspeed_vector = new double[Vector_length];
 
     ColumnSelect(longitude, longitude_vector);
     ColumnSelect(latitude, latitude_vector);

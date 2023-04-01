@@ -26,6 +26,8 @@ class Aircraft{
     vector<string> Single_Aircraft;
     int Single_Aircraft_size;
 
+
+
     double* longitude_vector;
     double* latitude_vector;
     double* altitude_vector;
@@ -41,6 +43,7 @@ class Aircraft{
     public:
     void Set_Parameters_and_Data(string File_Path, int no_cols, int index_input);
     void Vector_Allocation();
+    int Vector_length;
 
 };
 

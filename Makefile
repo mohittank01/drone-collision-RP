@@ -8,7 +8,7 @@ TARGET   = Monte_Carlo
 default: $(TARGET)
 all: $(TARGET)
 
-$(TARGET): $(TARGET).o Aircraft.o
+$(TARGET): $(TARGET).o Aircraft.o Drone.o
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $< $(LDLIBS)
