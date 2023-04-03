@@ -20,6 +20,8 @@ void Aircraft::Set_Parameters_and_Data(string File_Path, int no_cols, int index_
     altitude = 2;
     // Groundspeed column number
     groundspeed = 8;
+    // Onground Column number
+    onground = 15;
 
     // Chosen Aircraft index
     index = index_input;
@@ -100,9 +102,24 @@ void Aircraft::ColumnSelect(int column_no, double* column_pointer){
   
 }
 
+
+void Aircraft::Takeoff_Time(){
+    takeoff_t = 0;
+    for(int i = 0; i < Single_Aircraft_size / TotalCols; ++i){
+        if(Single_Aircraft[i*TotalCols + onground] != Single_Aircraft[(i+1)*TotalCols + onground]){
+            break;
+        }
+        takeoff_t += 1;
+    }
+    
+    cout << takeoff_t << endl;
+    cout << Single_Aircraft[takeoff_t*TotalCols + onground] << endl;
+}
+
+
 void Aircraft::Vector_Allocation(){
     SingleAircraft();
-    
+    Takeoff_Time();
     Vector_length = Single_Aircraft_size/TotalCols;
 
     longitude_vector = new double[Vector_length];
@@ -115,23 +132,17 @@ void Aircraft::Vector_Allocation(){
     ColumnSelect(altitude, altitude_vector);
     ColumnSelect(groundspeed, groundspeed_vector);
 
-    cout.precision(10);
-    cout << longitude_vector[10] << endl;
-    cout << latitude_vector[10] << endl;
-    cout << altitude_vector[10] << endl;
-
 }
 
 
 
-/*
-void Aircraft::PrintAircraft(vector<string> aircraft, int ldh){
+
+void Aircraft::PrintAircraft(){
   cout.precision(4);
-  for (int i = 0; i < aircraft.size() / ldh ; ++i){
-    for (int j = 0; j < ldh; ++j){
-      cout << setw(4) << aircraft[i*ldh + j] << " ";
+  for (int i = 0; i < Single_Aircraft_size / TotalCols ; ++i){
+    for (int j = 0; j < TotalCols; ++j){
+      cout << setw(4) << Single_Aircraft[i*TotalCols + j] << " ";
     }
     cout << endl;
   }
 }
-*/

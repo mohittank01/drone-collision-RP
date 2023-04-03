@@ -14,6 +14,7 @@ class Aircraft{
     int latitude;
     int altitude;
     int groundspeed;
+    int onground;
     int index;
 
 
@@ -26,7 +27,7 @@ class Aircraft{
     vector<string> Single_Aircraft;
     int Single_Aircraft_size;
 
-
+    int takeoff_t;
 
     double* longitude_vector;
     double* latitude_vector;
@@ -37,8 +38,9 @@ class Aircraft{
     void AircraftIndex();
     void SingleAircraft();
     void ColumnSelect(int column_no, double* column_pointer);
+    void Takeoff_Time();
 
-    void PrintAircraft(vector<string> aircraft, int ldh);
+    void PrintAircraft();
 
     public:
     void Set_Parameters_and_Data(string File_Path, int no_cols, int index_input);
