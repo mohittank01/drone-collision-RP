@@ -113,7 +113,6 @@ void Aircraft::Takeoff_Time(){
     }
     
     cout << takeoff_t << endl;
-    cout << Single_Aircraft[takeoff_t*TotalCols + onground] << endl;
 }
 
 
