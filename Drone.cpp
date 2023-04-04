@@ -46,7 +46,7 @@ void Drone::SetInitialConditions(string FilePath_input, int Vector_length_input,
     else{
         depart_or_arrive = 0; // DEPART
     }
-
+ 
     longitude_factor_1st = new int[1];
     latitude_factor_1st = new int[1];
 
@@ -60,6 +60,8 @@ void Drone::SetInitialConditions(string FilePath_input, int Vector_length_input,
     max_straight_speed = 19.0;
 
     FirstStage();
+    SecondStage();
+    Deallocate();
 }
 
 
@@ -120,9 +122,9 @@ void Drone::FirstStage(){
     mt19937 engine(seed());
     uniform_int_distribution<int> dist(min_t_1st, max_t_1st); // uniform, unbiased
 
-    int random_t_1st = dist(engine);
+    random_t_1st = dist(engine);
 
-    for(int i = 1; i <= random_t_1st; ++i){
+    for(int i = 1; i < random_t_1st; ++i){
         longitude_vector[i] = longitude_vector[i-1] + sin(heading_vector[i-1])*max_straight_speed;
         latitude_vector[i] = latitude_vector[i-1] + cos(heading_vector[i-1])*max_straight_speed;
         heading_vector[i] = heading_vector[i-1];
@@ -153,7 +155,7 @@ void Drone::CubedVolume(){
         max_cube_lat = 5704800.46;
         min_cube_lat = max_cube_lat - 500; // MINUS 500m TO THE MAX FOR THE RUNWAY WIDTH
 
-        if(depart_or_arrive){ // ARRIVAL
+        if(depart_or_arrive == 1){ // ARRIVAL
             min_cube_long = 676345.60;
             max_cube_long = min_cube_long + 5000;
         }
@@ -162,4 +164,82 @@ void Drone::CubedVolume(){
             min_cube_long = max_cube_long - 5000; // FOR THE LENGTH OF THE CUBED VOLUME - 5000m
         }
     }
+}
+
+
+void Drone::SecondStage(){
+    CubedVolume();
+
+    // Seed generator
+    random_device seed;
+    mt19937 engine(seed());
+    
+    // Uniform distribution - LONGITUDE
+    uniform_real_distribution<double> long_dist(min_cube_long, max_cube_long); // uniform, unbiased
+
+    // Uniform distribution - LATITUDE
+    uniform_real_distribution<double> lat_dist(min_cube_lat, max_cube_lat); // uniform, unbiased
+
+    // Uniform distribution - ALTITUDE
+    uniform_real_distribution<double> alt_dist(min_cube_alt, max_cube_alt); // uniform, unbiased
+
+    double random_long = long_dist(engine);
+    double random_lat = lat_dist(engine);
+    double random_alt = alt_dist(engine);
+
+    cout.precision(15);
+    cout << random_long << endl;
+    cout << random_lat << endl;
+    cout << random_alt << endl;
+
+    double heading_angle;
+
+    int last_index = random_t_1st - 1;
+
+    cout<<longitude_vector[last_index]<<endl;
+    cout<<latitude_vector[last_index]<<endl;
+
+    // TOP LEFT
+    if(random_long < longitude_vector[last_index] && random_lat > latitude_vector[last_index]){
+        heading_angle = 2*M_PI - atan(abs(random_long - longitude_vector[last_index]) / abs(random_lat - latitude_vector[last_index]));
+        cout << 1 << endl;
+    }
+    // BOTTOM LEFT
+    else if(random_long < longitude_vector[last_index] && random_lat < latitude_vector[last_index]){
+        heading_angle = 1.5*M_PI - atan(abs(random_lat - latitude_vector[last_index]) / abs(random_long - longitude_vector[last_index]));
+        cout << 2 << endl;
+    }
+    // BOTTOM RIGHT
+    else if(random_long > longitude_vector[last_index] && random_lat < latitude_vector[last_index]){
+        heading_angle = M_PI - atan(abs(random_long - longitude_vector[last_index]) / abs(random_lat - latitude_vector[last_index]));
+        cout << 3 << endl;
+    }
+    // TOP RIGHT
+    else if(random_long > longitude_vector[last_index] && random_lat > latitude_vector[last_index]){
+        heading_angle = atan(abs(random_long - longitude_vector[last_index]) / abs(random_lat - latitude_vector[last_index]));
+        cout << 4 << endl;
+    }
+    
+
+    cout << heading_angle <<endl;
+
+    for(int i = random_t_1st; i < VectorLength; ++i){
+
+    }
+
+}
+
+void Drone::Deallocate(){
+    delete[] longitude_vector;
+    delete[] latitude_vector;
+    delete[] altitude_vector;
+    delete[] speed_vector;
+    delete[] heading_vector;
+
+    delete[] aircraft_longitude;
+    delete[] aircraft_latitude;
+    delete[] aircraft_altitude;
+	
+	delete[] longitude_factor_1st;
+    delete[] latitude_factor_1st;
 }

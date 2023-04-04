@@ -14,7 +14,7 @@ int main(){
 
   string FilePath_drone = "drone_inital_positions_5km.csv";
   int no_col_drone = 4;
-  int index_drone = 0;
+  int index_drone = 49;
 
   Aircraft Aircraft;
   Drone Drone;

@@ -30,6 +30,8 @@ class Drone{
     void HeadingCalc(double heading_val, int* longitude_vector, int* latitude_vector);
     void FirstStage();
     void CubedVolume();
+    void SecondStage();
+    void Deallocate();
 
     double* aircraft_longitude;
     double* aircraft_latitude;
@@ -42,6 +44,8 @@ class Drone{
     double* heading_vector;
 
     double max_straight_speed;
+
+    int random_t_1st;
 
     double min_cube_long;
     double max_cube_long;

@@ -17,7 +17,7 @@ void Aircraft::Set_Parameters_and_Data(string File_Path, int no_cols, int index_
     // Latitude column number
     latitude = 13;
     // Altitude column number 
-    altitude = 2;
+    altitude = 7;
     // Groundspeed column number
     groundspeed = 8;
     // Onground Column number
