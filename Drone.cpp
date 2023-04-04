@@ -8,7 +8,7 @@
 
 using namespace std;
 
-void Drone::SetInitialConditions(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int takeoff_time_input){
+void Drone::SetInitialConditions(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt){
     FilePath = FilePath_input;
     VectorLength = Vector_length_input;
     TotalCols = TotalCols_input;
@@ -29,6 +29,23 @@ void Drone::SetInitialConditions(string FilePath_input, int Vector_length_input,
     altitude_vector = new double[VectorLength];
     speed_vector = new double[VectorLength];
     heading_vector = new double[VectorLength];
+
+    aircraft_longitude = new double[VectorLength];
+    aircraft_latitude = new double[VectorLength];
+    aircraft_altitude = new double[VectorLength];
+
+    for(int i = 0; i < VectorLength; ++i){
+        aircraft_longitude[i] = air_long[i];
+        aircraft_latitude[i] = air_lat[i];
+        aircraft_altitude[i] = air_alt[i];
+    }
+
+    if(aircraft_altitude[0] != 0){
+        depart_or_arrive = 1; // ARRIVAL 
+    }
+    else{
+        depart_or_arrive = 0; // DEPART
+    }
 
     longitude_factor_1st = new int[1];
     latitude_factor_1st = new int[1];
@@ -104,14 +121,45 @@ void Drone::FirstStage(){
     uniform_int_distribution<int> dist(min_t_1st, max_t_1st); // uniform, unbiased
 
     int random_t_1st = dist(engine);
-    
+
     for(int i = 1; i <= random_t_1st; ++i){
         longitude_vector[i] = longitude_vector[i-1] + sin(heading_vector[i-1])*max_straight_speed;
         latitude_vector[i] = latitude_vector[i-1] + cos(heading_vector[i-1])*max_straight_speed;
         heading_vector[i] = heading_vector[i-1];
         speed_vector[i] = max_straight_speed;
     }
+}
 
+void Drone::CubedVolume(){
+    // LHR
+    min_cube_alt = 100;
+    max_cube_alt = min_cube_alt + 400; // ADDING 400m TO THE MIN ALTITUDE
 
+    // 27R
+    if(aircraft_latitude[0] <= 5706340.62 && aircraft_latitude[0] >= 5705792.58){
+        min_cube_lat = 5705770.46;
+        max_cube_lat = min_cube_lat + 500; // ADDING 500m TO THE MIN FOR THE RUNWAY WIDTH
+        if(depart_or_arrive){ // ARRIVAL
+            min_cube_long = 676345.60;
+            max_cube_long = min_cube_long + 5000;
+        }
+        else{ // DEPARTURE
+            max_cube_long = 676819.02; 
+            min_cube_long = max_cube_long - 5000; // FOR THE LENGTH OF THE CUBED VOLUME - 5000m
+        }
+    }
+    // 27L
+    else if(aircraft_latitude[0] <= 5705065.74 && aircraft_latitude[0] >= 5704388.38){
+        max_cube_lat = 5704800.46;
+        min_cube_lat = max_cube_lat - 500; // MINUS 500m TO THE MAX FOR THE RUNWAY WIDTH
 
+        if(depart_or_arrive){ // ARRIVAL
+            min_cube_long = 676345.60;
+            max_cube_long = min_cube_long + 5000;
+        }
+        else{ // DEPARTURE
+            max_cube_long = 676819.02; 
+            min_cube_long = max_cube_long - 5000; // FOR THE LENGTH OF THE CUBED VOLUME - 5000m
+        }
+    }
 }

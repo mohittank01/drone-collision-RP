@@ -111,8 +111,6 @@ void Aircraft::Takeoff_Time(){
         }
         takeoff_t += 1;
     }
-    
-    cout << takeoff_t << endl;
 }
 
 

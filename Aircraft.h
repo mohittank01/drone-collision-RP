@@ -27,11 +27,6 @@ class Aircraft{
     vector<string> Single_Aircraft;
     int Single_Aircraft_size;
 
-    double* longitude_vector;
-    double* latitude_vector;
-    double* altitude_vector;
-    double* groundspeed_vector;
-
     void CSVData();
     void AircraftIndex();
     void SingleAircraft();
@@ -45,6 +40,11 @@ class Aircraft{
     void Vector_Allocation();
     int Vector_length;
     int takeoff_t;
+
+    double* longitude_vector;
+    double* latitude_vector;
+    double* altitude_vector;
+    double* groundspeed_vector;
 
 };
 

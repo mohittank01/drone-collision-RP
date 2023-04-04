@@ -29,6 +29,11 @@ class Drone{
     void ColumnSelect_Index(int column_no, double* column_pointer, int DroneIndex);
     void HeadingCalc(double heading_val, int* longitude_vector, int* latitude_vector);
     void FirstStage();
+    void CubedVolume();
+
+    double* aircraft_longitude;
+    double* aircraft_latitude;
+    double* aircraft_altitude;
 
     double* longitude_vector;
     double* latitude_vector;
@@ -38,9 +43,18 @@ class Drone{
 
     double max_straight_speed;
 
+    double min_cube_long;
+    double max_cube_long;
+    double min_cube_lat;
+    double max_cube_lat;
+    double min_cube_alt;
+    double max_cube_alt;
+
+    int depart_or_arrive;
+
     public:
 
-    void SetInitialConditions(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int takeoff_time_input);
+    void SetInitialConditions(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt);
 
 
 
