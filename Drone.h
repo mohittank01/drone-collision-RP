@@ -31,6 +31,7 @@ class Drone{
     void FirstStage();
     void CubedVolume();
     void SecondStage();
+    void Output();
     void Deallocate();
 
     double* aircraft_longitude;
@@ -44,8 +45,15 @@ class Drone{
     double* heading_vector;
 
     double max_straight_speed;
+    double max_ascend_speed;
+    double start_alt;
 
     int random_t_1st;
+
+    double random_long;
+    double random_lat;
+    double random_alt;
+    double heading_angle;
 
     double min_cube_long;
     double max_cube_long;

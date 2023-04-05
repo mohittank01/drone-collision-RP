@@ -50,17 +50,22 @@ void Drone::SetInitialConditions(string FilePath_input, int Vector_length_input,
     longitude_factor_1st = new int[1];
     latitude_factor_1st = new int[1];
 
+    start_alt = 100.0; // Starting Altitude
+    max_straight_speed = 19.0;
+
     // Initialise vectors
     longitude_vector[0] = stod(PositionData[((DroneIndex+1)*TotalCols) + longitude_col_no]); // Initialising longitude 
     latitude_vector[0] = stod(PositionData[((DroneIndex+1)*TotalCols) + latitude_col_no]); // Initialising latitude
     heading_vector[0] = stod(PositionData[((DroneIndex+1)*TotalCols) + heading_col_no]); // Initialising heading
-    altitude_vector[0] = 100; // 100m starting altitude
-    speed_vector[0] = 19; // 19m/s max strightline speed
+    altitude_vector[0] = start_alt; // 100m starting altitude
+    speed_vector[0] = max_straight_speed; // 19m/s max strightline speed
 
-    max_straight_speed = 19.0;
+
+    max_ascend_speed = 8.0;
 
     FirstStage();
     SecondStage();
+    Output();
     Deallocate();
 }
 
@@ -129,6 +134,7 @@ void Drone::FirstStage(){
         latitude_vector[i] = latitude_vector[i-1] + cos(heading_vector[i-1])*max_straight_speed;
         heading_vector[i] = heading_vector[i-1];
         speed_vector[i] = max_straight_speed;
+        altitude_vector[i] = start_alt;
     }
 }
 
@@ -183,50 +189,75 @@ void Drone::SecondStage(){
     // Uniform distribution - ALTITUDE
     uniform_real_distribution<double> alt_dist(min_cube_alt, max_cube_alt); // uniform, unbiased
 
-    double random_long = long_dist(engine);
-    double random_lat = lat_dist(engine);
-    double random_alt = alt_dist(engine);
+    random_long = long_dist(engine);
+    random_lat = lat_dist(engine);
+    random_alt = alt_dist(engine);
 
     cout.precision(15);
     cout << random_long << endl;
     cout << random_lat << endl;
     cout << random_alt << endl;
 
-    double heading_angle;
+    double pitch_angle;
+    double modulus_long_lat;
 
     int last_index = random_t_1st - 1;
+
+    double long_diff = abs(random_long - longitude_vector[last_index]);
+    double lat_diff = abs(random_lat - latitude_vector[last_index]);
+    double alt_diff = abs(random_alt - altitude_vector[last_index]);
+
 
     cout<<longitude_vector[last_index]<<endl;
     cout<<latitude_vector[last_index]<<endl;
 
     // TOP LEFT
-    if(random_long < longitude_vector[last_index] && random_lat > latitude_vector[last_index]){
-        heading_angle = 2*M_PI - atan(abs(random_long - longitude_vector[last_index]) / abs(random_lat - latitude_vector[last_index]));
+    if(random_long <= longitude_vector[last_index] && random_lat >= latitude_vector[last_index]){
+        heading_angle = 2*M_PI - atan(long_diff / lat_diff);
         cout << 1 << endl;
     }
     // BOTTOM LEFT
-    else if(random_long < longitude_vector[last_index] && random_lat < latitude_vector[last_index]){
-        heading_angle = 1.5*M_PI - atan(abs(random_lat - latitude_vector[last_index]) / abs(random_long - longitude_vector[last_index]));
+    else if(random_long <= longitude_vector[last_index] && random_lat <= latitude_vector[last_index]){
+        heading_angle = 1.5*M_PI - atan(lat_diff / long_diff);
         cout << 2 << endl;
     }
     // BOTTOM RIGHT
-    else if(random_long > longitude_vector[last_index] && random_lat < latitude_vector[last_index]){
-        heading_angle = M_PI - atan(abs(random_long - longitude_vector[last_index]) / abs(random_lat - latitude_vector[last_index]));
+    else if(random_long >= longitude_vector[last_index] && random_lat <= latitude_vector[last_index]){
+        heading_angle = M_PI - atan(long_diff / lat_diff);
         cout << 3 << endl;
     }
     // TOP RIGHT
-    else if(random_long > longitude_vector[last_index] && random_lat > latitude_vector[last_index]){
-        heading_angle = atan(abs(random_long - longitude_vector[last_index]) / abs(random_lat - latitude_vector[last_index]));
+    else if(random_long >= longitude_vector[last_index] && random_lat >= latitude_vector[last_index]){
+        heading_angle = atan(long_diff / lat_diff);
         cout << 4 << endl;
     }
     
+    modulus_long_lat = sqrt(long_diff*long_diff + lat_diff*lat_diff);
 
-    cout << heading_angle <<endl;
+    pitch_angle = atan(alt_diff / modulus_long_lat);
+
+    double velocity_factor = (max_straight_speed - (2*(max_straight_speed - max_ascend_speed)/M_PI)*pitch_angle);
 
     for(int i = random_t_1st; i < VectorLength; ++i){
-
+        longitude_vector[i] = longitude_vector[i-1] + sin(heading_angle) * velocity_factor;
+        latitude_vector[i] = latitude_vector[i-1] + cos(heading_angle) * velocity_factor;
+        altitude_vector[i] = altitude_vector[i-1] + sin(pitch_angle) * velocity_factor;
     }
 
+    cout << altitude_vector[VectorLength-1] << endl;
+    cout << velocity_factor << endl;
+
+}
+
+void Drone::Output(){
+    ofstream outfile;
+    outfile.open("Drone_coords.txt", ofstream::out | ofstream::trunc);
+    for (int i=0; i < VectorLength; ++i){
+        outfile << longitude_vector[i] << " " << latitude_vector[i] << " " << altitude_vector[i] << '\n';
+    }
+    outfile << '\n';
+    outfile << random_long << " " << random_lat << " " << random_alt;
+    outfile.close();
 }
 
 void Drone::Deallocate(){
