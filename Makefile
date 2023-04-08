@@ -20,4 +20,4 @@ run: $(TARGET)
 	./$(TARGET)
 
 clean:
-	rm -f $(TARGET) *.o
+	rm -f $(TARGET) *.o Drone_coords*.csv *.txt

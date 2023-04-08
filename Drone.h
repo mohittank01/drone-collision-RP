@@ -12,7 +12,12 @@ class Drone{
 
     int VectorLength;
     int DroneIndex;
+    int AircraftIndex;
     int TakeoffTime;
+
+    double AircraftRadius;
+    double DroneRadius;
+
     int longitude_col_no;
     int latitude_col_no;
     int heading_col_no;
@@ -22,27 +27,26 @@ class Drone{
     vector<string> PositionData;
     string FilePath;
 
+    double* initial_long_pos;
+    double* initial_lat_pos;
+    double* initial_heading;
+
     int* longitude_factor_1st;
     int* latitude_factor_1st;
 
     void CSVData();
     void ColumnSelect_Index(int column_no, double* column_pointer, int DroneIndex);
-    void HeadingCalc(double heading_val, int* longitude_vector, int* latitude_vector);
+    void SetInitialConditions();
     void FirstStage();
     void CubedVolume();
     void SecondStage();
-    void Output();
+    bool Collision();
+    void Output(int run_no);
     void Deallocate();
 
     double* aircraft_longitude;
     double* aircraft_latitude;
     double* aircraft_altitude;
-
-    double* longitude_vector;
-    double* latitude_vector;
-    double* altitude_vector;
-    double* speed_vector;
-    double* heading_vector;
 
     double max_straight_speed;
     double max_ascend_speed;
@@ -66,8 +70,14 @@ class Drone{
 
     public:
 
-    void SetInitialConditions(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt);
+    void SetInitialParameters(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input);
+    void Simulation(int number_runs);
 
+    double* longitude_vector;
+    double* latitude_vector;
+    double* altitude_vector;
+    double* speed_vector;
+    double* heading_vector;
 
 
 };

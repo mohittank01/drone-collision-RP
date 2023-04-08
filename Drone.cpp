@@ -8,12 +8,15 @@
 
 using namespace std;
 
-void Drone::SetInitialConditions(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt){
+void Drone::SetInitialParameters(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input){
     FilePath = FilePath_input;
     VectorLength = Vector_length_input;
     TotalCols = TotalCols_input;
     DroneIndex = drone_index_input;
+    AircraftIndex = aircraft_index_input;
     TakeoffTime = takeoff_time_input;
+    AircraftRadius = aircraft_radius_input;
+    DroneRadius = drone_radius_input;
 
     // Column numbers
     longitude_col_no = 1;
@@ -23,12 +26,13 @@ void Drone::SetInitialConditions(string FilePath_input, int Vector_length_input,
     // Obtain inital position data from Python csv file
     CSVData();
 
-    // Allocate memory to vectors
-    longitude_vector = new double[VectorLength];
-    latitude_vector = new double[VectorLength];
-    altitude_vector = new double[VectorLength];
-    speed_vector = new double[VectorLength];
-    heading_vector = new double[VectorLength];
+    initial_long_pos = new double[1];
+    initial_lat_pos = new double[1];
+    initial_heading = new double[1];
+
+    *initial_long_pos = stod(PositionData[((DroneIndex+1)*TotalCols) + longitude_col_no]);
+    *initial_lat_pos = stod(PositionData[((DroneIndex+1)*TotalCols) + latitude_col_no]);
+    *initial_heading = stod(PositionData[((DroneIndex+1)*TotalCols) + heading_col_no]);
 
     aircraft_longitude = new double[VectorLength];
     aircraft_latitude = new double[VectorLength];
@@ -47,26 +51,25 @@ void Drone::SetInitialConditions(string FilePath_input, int Vector_length_input,
         depart_or_arrive = 0; // DEPART
     }
  
-    longitude_factor_1st = new int[1];
-    latitude_factor_1st = new int[1];
-
     start_alt = 100.0; // Starting Altitude
     max_straight_speed = 19.0;
+    max_ascend_speed = 8.0;
+}
+
+void Drone::SetInitialConditions(){
+    // Allocate memory to vectors
+    longitude_vector = new double[VectorLength];
+    latitude_vector = new double[VectorLength];
+    altitude_vector = new double[VectorLength];
+    speed_vector = new double[VectorLength];
+    heading_vector = new double[VectorLength];
 
     // Initialise vectors
-    longitude_vector[0] = stod(PositionData[((DroneIndex+1)*TotalCols) + longitude_col_no]); // Initialising longitude 
-    latitude_vector[0] = stod(PositionData[((DroneIndex+1)*TotalCols) + latitude_col_no]); // Initialising latitude
-    heading_vector[0] = stod(PositionData[((DroneIndex+1)*TotalCols) + heading_col_no]); // Initialising heading
+    longitude_vector[0] = *initial_long_pos; // Initialising longitude
+    latitude_vector[0] = *initial_lat_pos; // Initialising latitude
+    heading_vector[0] = *initial_heading; // Initialising heading
     altitude_vector[0] = start_alt; // 100m starting altitude
     speed_vector[0] = max_straight_speed; // 19m/s max strightline speed
-
-
-    max_ascend_speed = 8.0;
-
-    FirstStage();
-    SecondStage();
-    Output();
-    Deallocate();
 }
 
 
@@ -94,40 +97,16 @@ void Drone::CSVData(){
     PositionData_size = PositionData.size();
 }
 
-// DONT ACTUIALLY NEED THIS FUCNTION BUT KEPT IT JUST IN CASE DOUBT ID NEED IT
-void Drone::HeadingCalc(double heading_val, int* longitude_factor, int* latitude_factor){
-    // Top right quadrant
-    if(heading_val >= M_PI && heading_val <= 1.5*M_PI){
-        *longitude_factor = -1;
-        *latitude_factor = -1;
-    }
-    // Bottom right quadrant
-    else if(heading_val >= 1.5*M_PI && heading_val <= 2*M_PI){
-        *longitude_factor = -1;
-        *latitude_factor = 1;
-    }
-    // Bottom left quadrant
-    else if(heading_val >= 0 && heading_val <= 0.5*M_PI){
-        *longitude_factor = 1;
-        *latitude_factor = 1;
-    }
-    // Top left quadrant
-    else if(heading_val >= 0.5*M_PI && heading_val <= M_PI){
-        *longitude_factor = 1;
-        *latitude_factor = -1;
-    }
-}
-
-
 void Drone::FirstStage(){
     int min_t_1st = 0;
     int max_t_1st = TakeoffTime;
 
-    random_device seed;
-    mt19937 engine(seed());
-    uniform_int_distribution<int> dist(min_t_1st, max_t_1st); // uniform, unbiased
+    //random_device seed;
+    //mt19937 engine(seed());
+    //uniform_int_distribution<int> dist(min_t_1st, max_t_1st); // uniform, unbiased
 
-    random_t_1st = dist(engine);
+    //random_t_1st = dist(engine);
+    random_t_1st = rand()%(max_t_1st-min_t_1st + 1) + min_t_1st;
 
     for(int i = 1; i < random_t_1st; ++i){
         longitude_vector[i] = longitude_vector[i-1] + sin(heading_vector[i-1])*max_straight_speed;
@@ -177,26 +156,25 @@ void Drone::SecondStage(){
     CubedVolume();
 
     // Seed generator
-    random_device seed;
-    mt19937 engine(seed());
+    //random_device seed;
+    //mt19937 engine(seed());
+    //default_random_engine engine{std::random_device{}()};
     
     // Uniform distribution - LONGITUDE
-    uniform_real_distribution<double> long_dist(min_cube_long, max_cube_long); // uniform, unbiased
+    //uniform_real_distribution<double> long_dist(min_cube_long, max_cube_long); // uniform, unbiased
 
     // Uniform distribution - LATITUDE
-    uniform_real_distribution<double> lat_dist(min_cube_lat, max_cube_lat); // uniform, unbiased
+    //uniform_real_distribution<double> lat_dist(min_cube_lat, max_cube_lat); // uniform, unbiased
 
     // Uniform distribution - ALTITUDE
-    uniform_real_distribution<double> alt_dist(min_cube_alt, max_cube_alt); // uniform, unbiased
+    //uniform_real_distribution<double> alt_dist(min_cube_alt, max_cube_alt); // uniform, unbiased
 
-    random_long = long_dist(engine);
-    random_lat = lat_dist(engine);
-    random_alt = alt_dist(engine);
-
-    cout.precision(15);
-    cout << random_long << endl;
-    cout << random_lat << endl;
-    cout << random_alt << endl;
+    //random_long = long_dist(engine);
+    random_long = (rand() / (double)RAND_MAX) * (max_cube_long-min_cube_long) + min_cube_long;
+    //random_lat = lat_dist(engine);
+    random_lat = (rand() / (double)RAND_MAX) * (max_cube_lat-min_cube_lat) + min_cube_lat;
+    //random_alt = alt_dist(engine);
+    random_alt = (rand() / (double)RAND_MAX) * (max_cube_alt-min_cube_alt) + min_cube_alt;
 
     double pitch_angle;
     double modulus_long_lat;
@@ -207,29 +185,21 @@ void Drone::SecondStage(){
     double lat_diff = abs(random_lat - latitude_vector[last_index]);
     double alt_diff = abs(random_alt - altitude_vector[last_index]);
 
-
-    cout<<longitude_vector[last_index]<<endl;
-    cout<<latitude_vector[last_index]<<endl;
-
     // TOP LEFT
     if(random_long <= longitude_vector[last_index] && random_lat >= latitude_vector[last_index]){
         heading_angle = 2*M_PI - atan(long_diff / lat_diff);
-        cout << 1 << endl;
     }
     // BOTTOM LEFT
     else if(random_long <= longitude_vector[last_index] && random_lat <= latitude_vector[last_index]){
         heading_angle = 1.5*M_PI - atan(lat_diff / long_diff);
-        cout << 2 << endl;
     }
     // BOTTOM RIGHT
     else if(random_long >= longitude_vector[last_index] && random_lat <= latitude_vector[last_index]){
         heading_angle = M_PI - atan(long_diff / lat_diff);
-        cout << 3 << endl;
     }
     // TOP RIGHT
     else if(random_long >= longitude_vector[last_index] && random_lat >= latitude_vector[last_index]){
         heading_angle = atan(long_diff / lat_diff);
-        cout << 4 << endl;
     }
     
     modulus_long_lat = sqrt(long_diff*long_diff + lat_diff*lat_diff);
@@ -238,25 +208,27 @@ void Drone::SecondStage(){
 
     double velocity_factor = (max_straight_speed - (2*(max_straight_speed - max_ascend_speed)/M_PI)*pitch_angle);
 
+
+
     for(int i = random_t_1st; i < VectorLength; ++i){
         longitude_vector[i] = longitude_vector[i-1] + sin(heading_angle) * velocity_factor;
         latitude_vector[i] = latitude_vector[i-1] + cos(heading_angle) * velocity_factor;
         altitude_vector[i] = altitude_vector[i-1] + sin(pitch_angle) * velocity_factor;
+        speed_vector[i] = velocity_factor;
+        heading_vector[i] = heading_angle;
     }
-
-    cout << altitude_vector[VectorLength-1] << endl;
-    cout << velocity_factor << endl;
 
 }
 
-void Drone::Output(){
+void Drone::Output(int run_no){
+    string aircraft_index = to_string(AircraftIndex);
     ofstream outfile;
-    outfile.open("Drone_coords.txt", ofstream::out | ofstream::trunc);
+    outfile.open("Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
+    outfile.precision(10);
     for (int i=0; i < VectorLength; ++i){
-        outfile << longitude_vector[i] << " " << latitude_vector[i] << " " << altitude_vector[i] << '\n';
+        outfile << longitude_vector[i] << "," << latitude_vector[i] << "," << altitude_vector[i] << "," << run_no << '\n';
     }
     outfile << '\n';
-    outfile << random_long << " " << random_lat << " " << random_alt;
     outfile.close();
 }
 
@@ -266,11 +238,36 @@ void Drone::Deallocate(){
     delete[] altitude_vector;
     delete[] speed_vector;
     delete[] heading_vector;
+}
 
-    delete[] aircraft_longitude;
-    delete[] aircraft_latitude;
-    delete[] aircraft_altitude;
-	
-	delete[] longitude_factor_1st;
-    delete[] latitude_factor_1st;
+bool Drone::Collision(){
+    for(int i = 0; i < VectorLength; ++i){
+        double distance = sqrt(
+            (longitude_vector[i] - aircraft_longitude[i]) * (longitude_vector[i] - aircraft_longitude[i]) +
+            (latitude_vector[i] - aircraft_latitude[i]) * (latitude_vector[i] - aircraft_latitude[i]) + 
+            (altitude_vector[i] - aircraft_altitude[i]) * (altitude_vector[i] - aircraft_altitude[i])
+        );
+        if (distance < (DroneRadius + AircraftRadius)){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+
+void Drone::Simulation(int number_runs){
+    int collision_number = 0;
+    for(int i = 0; i < number_runs; ++i){
+        SetInitialConditions();
+        FirstStage();   // Drone heads towards centre of runway
+        SecondStage();  // Drone heads towards random coords in volume
+        Output(i);   // Outputs to text file
+        Deallocate();
+        if (Collision()){
+            collision_number += 1;
+            cout << "COLLISION" << '\n';
+        }
+    }
+
 }
