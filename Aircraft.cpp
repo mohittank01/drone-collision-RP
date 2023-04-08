@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void Aircraft::Set_Parameters_and_Data(string File_Path, int no_cols, int index_input){
+void Aircraft::Set_Parameters_and_Data(string File_Path, int no_cols){
     FilePath = File_Path;
     TotalCols = no_cols;
     // Callsign column number
@@ -23,8 +23,6 @@ void Aircraft::Set_Parameters_and_Data(string File_Path, int no_cols, int index_
     // Onground Column number
     onground = 15;
 
-    // Chosen Aircraft index
-    index = index_input;
 
     CSVData();
     AircraftIndex();
@@ -114,7 +112,8 @@ void Aircraft::Takeoff_Time(){
 }
 
 
-void Aircraft::Vector_Allocation(){
+void Aircraft::Vector_Allocation(int index_input){
+    index = index_input;
     SingleAircraft();
     Takeoff_Time();
     Vector_length = Single_Aircraft_size/TotalCols;
@@ -131,7 +130,12 @@ void Aircraft::Vector_Allocation(){
 
 }
 
-
+void Aircraft::Deallocation(){
+    delete[] longitude_vector;
+    delete[] latitude_vector;
+    delete[] altitude_vector;
+    delete[] groundspeed_vector;
+}
 
 
 void Aircraft::PrintAircraft(){

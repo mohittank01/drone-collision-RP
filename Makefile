@@ -13,7 +13,7 @@ $(TARGET): $(TARGET).o Aircraft.o Drone.o
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $< $(LDLIBS)
 
-.PHONY: clean
+.PHONY: clean clean_drone
 
 
 run: $(TARGET)
@@ -21,3 +21,6 @@ run: $(TARGET)
 
 clean:
 	rm -f $(TARGET) *.o Drone_coords*.csv *.txt
+
+clean_drone:
+	rm Drone_Collisions/Drone_coords*.csv

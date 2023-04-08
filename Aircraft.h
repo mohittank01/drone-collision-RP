@@ -23,7 +23,6 @@ class Aircraft{
     vector<string> AllData;
     int AllData_size;
     vector<int> Aircraft_Index;
-    int Aircraft_Index_size;
     vector<string> Single_Aircraft;
     int Single_Aircraft_size;
 
@@ -36,10 +35,13 @@ class Aircraft{
     void PrintAircraft();
 
     public:
-    void Set_Parameters_and_Data(string File_Path, int no_cols, int index_input);
-    void Vector_Allocation();
+    void Set_Parameters_and_Data(string File_Path, int no_cols);
+    void Vector_Allocation(int index_input);
+    void Deallocation();
     int Vector_length;
     int takeoff_t;
+
+    int Aircraft_Index_size;
 
     double* longitude_vector;
     double* latitude_vector;

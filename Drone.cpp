@@ -54,6 +54,11 @@ void Drone::SetInitialParameters(string FilePath_input, int Vector_length_input,
     start_alt = 100.0; // Starting Altitude
     max_straight_speed = 19.0;
     max_ascend_speed = 8.0;
+
+    string aircraft_index = to_string(AircraftIndex);
+    ofstream outfile;
+    outfile.open("Drone_Collisions/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::trunc);
+    outfile.close();
 }
 
 void Drone::SetInitialConditions(){
@@ -98,15 +103,17 @@ void Drone::CSVData(){
 }
 
 void Drone::FirstStage(){
-    int min_t_1st = 0;
+    int min_t_1st = 1;
     int max_t_1st = TakeoffTime;
 
-    //random_device seed;
+    //random_device seed;d
     //mt19937 engine(seed());
+    //default_random_engine engine{random_device{}()};
     //uniform_int_distribution<int> dist(min_t_1st, max_t_1st); // uniform, unbiased
 
     //random_t_1st = dist(engine);
     random_t_1st = rand()%(max_t_1st-min_t_1st + 1) + min_t_1st;
+
 
     for(int i = 1; i < random_t_1st; ++i){
         longitude_vector[i] = longitude_vector[i-1] + sin(heading_vector[i-1])*max_straight_speed;
@@ -158,7 +165,7 @@ void Drone::SecondStage(){
     // Seed generator
     //random_device seed;
     //mt19937 engine(seed());
-    //default_random_engine engine{std::random_device{}()};
+    //default_random_engine engine{random_device{}()};
     
     // Uniform distribution - LONGITUDE
     //uniform_real_distribution<double> long_dist(min_cube_long, max_cube_long); // uniform, unbiased
@@ -217,13 +224,12 @@ void Drone::SecondStage(){
         speed_vector[i] = velocity_factor;
         heading_vector[i] = heading_angle;
     }
-
 }
 
 void Drone::Output(int run_no){
     string aircraft_index = to_string(AircraftIndex);
     ofstream outfile;
-    outfile.open("Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
+    outfile.open("Drone_Collisions/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
     outfile.precision(10);
     for (int i=0; i < VectorLength; ++i){
         outfile << longitude_vector[i] << "," << latitude_vector[i] << "," << altitude_vector[i] << "," << run_no << '\n';
@@ -256,17 +262,16 @@ bool Drone::Collision(){
 
 
 
-void Drone::Simulation(int number_runs){
-    int collision_number = 0;
+void Drone::Simulation(int number_runs, double* total_collisions){
     for(int i = 0; i < number_runs; ++i){
         SetInitialConditions();
         FirstStage();   // Drone heads towards centre of runway
         SecondStage();  // Drone heads towards random coords in volume
-        Output(i);   // Outputs to text file
         Deallocate();
         if (Collision()){
-            collision_number += 1;
-            cout << "COLLISION" << '\n';
+            Output(i);   // Outputs to text file
+            *total_collisions += 1;
+            
         }
     }
 
