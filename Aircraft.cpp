@@ -69,19 +69,17 @@ void Aircraft::AircraftIndex(){
 }
 
 
-void Aircraft::SingleAircraft(){
+void Aircraft::SingleAircraft(int index){
     if (index == Aircraft_Index_size){
         for (int i = Aircraft_Index[index-1]; i < AllData_size; ++i){
         Single_Aircraft.push_back(AllData[i]);
         }
     }
-
     else{
         for (int i = Aircraft_Index[index]; i < Aircraft_Index[index+1]; ++i){
             Single_Aircraft.push_back(AllData[i]);
         }
     }
-
     Single_Aircraft_size = Single_Aircraft.size();
 }
 
@@ -113,8 +111,7 @@ void Aircraft::Takeoff_Time(){
 
 
 void Aircraft::Vector_Allocation(int index_input){
-    index = index_input;
-    SingleAircraft();
+    SingleAircraft(index_input);
     Takeoff_Time();
     Vector_length = Single_Aircraft_size/TotalCols;
 
@@ -135,6 +132,7 @@ void Aircraft::Deallocation(){
     delete[] latitude_vector;
     delete[] altitude_vector;
     delete[] groundspeed_vector;
+    Single_Aircraft.clear();
 }
 
 

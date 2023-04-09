@@ -72,6 +72,7 @@ class Drone{
 
     void SetInitialParameters(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input);
     void Simulation(int number_runs, double* total_collisions);
+    void ClearOutput(int Aircraft_Index);
 
     double* longitude_vector;
     double* latitude_vector;

@@ -54,8 +54,10 @@ void Drone::SetInitialParameters(string FilePath_input, int Vector_length_input,
     start_alt = 100.0; // Starting Altitude
     max_straight_speed = 19.0;
     max_ascend_speed = 8.0;
+}
 
-    string aircraft_index = to_string(AircraftIndex);
+void Drone::ClearOutput(int Aircraft_Index){
+    string aircraft_index = to_string(Aircraft_Index);
     ofstream outfile;
     outfile.open("Drone_Collisions/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::trunc);
     outfile.close();
@@ -108,11 +110,11 @@ void Drone::FirstStage(){
 
     //random_device seed;d
     //mt19937 engine(seed());
-    //default_random_engine engine{random_device{}()};
-    //uniform_int_distribution<int> dist(min_t_1st, max_t_1st); // uniform, unbiased
+    default_random_engine engine{random_device{}()};
+    uniform_int_distribution<int> dist(min_t_1st, max_t_1st); // uniform, unbiased
 
-    //random_t_1st = dist(engine);
-    random_t_1st = rand()%(max_t_1st-min_t_1st + 1) + min_t_1st;
+    random_t_1st = dist(engine);
+    //random_t_1st = rand()%(max_t_1st-min_t_1st + 1) + min_t_1st;
 
 
     for(int i = 1; i < random_t_1st; ++i){
@@ -165,23 +167,25 @@ void Drone::SecondStage(){
     // Seed generator
     //random_device seed;
     //mt19937 engine(seed());
-    //default_random_engine engine{random_device{}()};
+    default_random_engine engine_1{random_device{}()};
+    default_random_engine engine_2{random_device{}()};
+    default_random_engine engine_3{random_device{}()};
     
     // Uniform distribution - LONGITUDE
-    //uniform_real_distribution<double> long_dist(min_cube_long, max_cube_long); // uniform, unbiased
+    uniform_real_distribution<double> long_dist(min_cube_long, max_cube_long); // uniform, unbiased
 
     // Uniform distribution - LATITUDE
-    //uniform_real_distribution<double> lat_dist(min_cube_lat, max_cube_lat); // uniform, unbiased
+    uniform_real_distribution<double> lat_dist(min_cube_lat, max_cube_lat); // uniform, unbiased
 
     // Uniform distribution - ALTITUDE
-    //uniform_real_distribution<double> alt_dist(min_cube_alt, max_cube_alt); // uniform, unbiased
+    uniform_real_distribution<double> alt_dist(min_cube_alt, max_cube_alt); // uniform, unbiased
 
-    //random_long = long_dist(engine);
-    random_long = (rand() / (double)RAND_MAX) * (max_cube_long-min_cube_long) + min_cube_long;
-    //random_lat = lat_dist(engine);
-    random_lat = (rand() / (double)RAND_MAX) * (max_cube_lat-min_cube_lat) + min_cube_lat;
-    //random_alt = alt_dist(engine);
-    random_alt = (rand() / (double)RAND_MAX) * (max_cube_alt-min_cube_alt) + min_cube_alt;
+    random_long = long_dist(engine_1);
+    //random_long = (rand() / (double)RAND_MAX) * (max_cube_long-min_cube_long) + min_cube_long;
+    random_lat = lat_dist(engine_2);
+    //random_lat = (rand() / (double)RAND_MAX) * (max_cube_lat-min_cube_lat) + min_cube_lat;
+    random_alt = alt_dist(engine_3);
+    //random_alt = (rand() / (double)RAND_MAX) * (max_cube_alt-min_cube_alt) + min_cube_alt;
 
     double pitch_angle;
     double modulus_long_lat;
@@ -267,12 +271,11 @@ void Drone::Simulation(int number_runs, double* total_collisions){
         SetInitialConditions();
         FirstStage();   // Drone heads towards centre of runway
         SecondStage();  // Drone heads towards random coords in volume
-        Deallocate();
         if (Collision()){
             Output(i);   // Outputs to text file
             *total_collisions += 1;
-            
         }
+        Deallocate();
     }
 
 }

@@ -15,7 +15,6 @@ class Aircraft{
     int altitude;
     int groundspeed;
     int onground;
-    int index;
 
 
     string FilePath;
@@ -28,7 +27,7 @@ class Aircraft{
 
     void CSVData();
     void AircraftIndex();
-    void SingleAircraft();
+    void SingleAircraft(int index);
     void ColumnSelect(int column_no, double* column_pointer);
     void Takeoff_Time();
 
