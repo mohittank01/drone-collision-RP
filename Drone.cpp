@@ -5,6 +5,7 @@
 #include <sstream>
 #include <random>
 #include <cmath>
+#include <omp.h>
 
 using namespace std;
 
@@ -267,15 +268,16 @@ bool Drone::Collision(){
 
 
 void Drone::Simulation(int number_runs, double* total_collisions){
+    SetInitialConditions();
+    #pragma omp parallel for firstprivate(longitude_vector, latitude_vector, altitude_vector, heading_vector, speed_vector) shared(total_collisions)
     for(int i = 0; i < number_runs; ++i){
-        SetInitialConditions();
         FirstStage();   // Drone heads towards centre of runway
         SecondStage();  // Drone heads towards random coords in volume
         if (Collision()){
-            Output(i);   // Outputs to text file
+            //Output(i);   // Outputs to text file
             *total_collisions += 1;
         }
-        Deallocate();
     }
+    Deallocate();
 
 }
