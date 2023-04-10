@@ -25,7 +25,7 @@ int main(){
 
   Aircraft.Set_Parameters_and_Data(FilePath_aircraft, no_col_aircraft);
 
-  for(int i=0; i < 10; ++i){
+  for(int i=0; i < 1; ++i){
     Aircraft.Vector_Allocation(i);
     Drone.ClearOutput(i);
     for(int j=0; j < drone_total; ++j){
