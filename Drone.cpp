@@ -316,9 +316,7 @@ bool Drone::Collision(){
 
 void Drone::Simulation(int number_runs, double* total_collisions, double* local_collisions, string distance_from_airport){
     SetInitialConditions();
-    int i;
-    //#pragma omp parallel for private(i) firstprivate(longitude_vector, latitude_vector, altitude_vector, heading_vector, speed_vector) shared(total_collisions)
-    for(i = 0; i < number_runs; ++i){
+    for(int i = 0; i < number_runs; ++i){
         FirstStage();   // Drone heads towards centre of runway
         SecondStage();  // Drone heads towards random coords in volume
         if (Collision()){
