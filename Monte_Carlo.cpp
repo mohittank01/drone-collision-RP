@@ -1,6 +1,7 @@
 #include "Aircraft.h"
 #include "Drone.h"
 #include <iostream>
+#include <omp.h>
 
 
 using namespace std;
@@ -24,8 +25,11 @@ int main(){
   Drone Drone;
 
   Aircraft.Set_Parameters_and_Data(FilePath_aircraft, no_col_aircraft);
+  Drone.ClearOutput_1File();
+  int i;
 
-  for(int i=0; i < 50; ++i){
+  #pragma omp parallel for private(i) firstprivate(Aircraft,Drone)
+  for(i=0; i < 10; ++i){
     Aircraft.Vector_Allocation(i);
     Drone.ClearOutput(i);
     for(int j=0; j < drone_total; ++j){

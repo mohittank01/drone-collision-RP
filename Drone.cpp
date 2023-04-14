@@ -31,6 +31,9 @@ void Drone::SetInitialParameters(string FilePath_input, int Vector_length_input,
     initial_lat_pos = new double[1];
     initial_heading = new double[1];
 
+    collision_index = new int[1];
+
+
     *initial_long_pos = stod(PositionData[((DroneIndex+1)*TotalCols) + longitude_col_no]);
     *initial_lat_pos = stod(PositionData[((DroneIndex+1)*TotalCols) + latitude_col_no]);
     *initial_heading = stod(PositionData[((DroneIndex+1)*TotalCols) + heading_col_no]);
@@ -63,6 +66,13 @@ void Drone::ClearOutput(int Aircraft_Index){
     outfile.open("Drone_Collisions/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::trunc);
     outfile.close();
 }
+
+void Drone::ClearOutput_1File(){
+    ofstream outfile;
+    outfile.open("All_Drone_Collisions.csv", ofstream::out | ofstream::trunc);
+    outfile.close();
+}
+
 
 void Drone::SetInitialConditions(){
     // Allocate memory to vectors
@@ -231,13 +241,35 @@ void Drone::SecondStage(){
     }
 }
 
+void Drone::Output_1File(int run_no){
+    string aircraft_index = to_string(AircraftIndex);
+    ofstream outfile1;
+    outfile1.open("All_Drone_Collisions.csv", ofstream::out | ofstream::app);
+    outfile1.precision(10);
+    for (int i=0; i < VectorLength; ++i){
+        if(i == *collision_index){
+            outfile1 << longitude_vector[i] << "," << latitude_vector[i] << "," << altitude_vector[i] << "," << run_no << "," << AircraftIndex << "," << 1 << '\n';    
+        }
+        else{
+            outfile1 << longitude_vector[i] << "," << latitude_vector[i] << "," << altitude_vector[i] << "," << run_no << "," << AircraftIndex << "," << 0 << '\n';
+        }
+    }
+    outfile1 << '\n';
+    outfile1.close();
+}
+
 void Drone::Output(int run_no){
     string aircraft_index = to_string(AircraftIndex);
     ofstream outfile;
     outfile.open("Drone_Collisions/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
     outfile.precision(10);
     for (int i=0; i < VectorLength; ++i){
-        outfile << longitude_vector[i] << "," << latitude_vector[i] << "," << altitude_vector[i] << "," << run_no << '\n';
+        if(i == *collision_index){
+            outfile << longitude_vector[i] << "," << latitude_vector[i] << "," << altitude_vector[i] << "," << run_no << "," << 1 << '\n';    
+        }
+        else{
+            outfile << longitude_vector[i] << "," << latitude_vector[i] << "," << altitude_vector[i] << "," << run_no << "," << 0 << '\n';
+        }
     }
     outfile << '\n';
     outfile.close();
@@ -249,6 +281,7 @@ void Drone::Deallocate(){
     delete[] altitude_vector;
     delete[] speed_vector;
     delete[] heading_vector;
+    delete[] collision_index;
 }
 
 bool Drone::Collision(){
@@ -259,6 +292,7 @@ bool Drone::Collision(){
             (altitude_vector[i] - aircraft_altitude[i]) * (altitude_vector[i] - aircraft_altitude[i])
         );
         if (distance < (DroneRadius + AircraftRadius)){
+            *collision_index = i;
             return 1;
         }
     }
@@ -269,12 +303,14 @@ bool Drone::Collision(){
 
 void Drone::Simulation(int number_runs, double* total_collisions){
     SetInitialConditions();
-    #pragma omp parallel for firstprivate(longitude_vector, latitude_vector, altitude_vector, heading_vector, speed_vector) shared(total_collisions)
-    for(int i = 0; i < number_runs; ++i){
+    int i;
+    //#pragma omp parallel for private(i) firstprivate(longitude_vector, latitude_vector, altitude_vector, heading_vector, speed_vector) shared(total_collisions)
+    for(i = 0; i < number_runs; ++i){
         FirstStage();   // Drone heads towards centre of runway
         SecondStage();  // Drone heads towards random coords in volume
         if (Collision()){
-            //Output(i);   // Outputs to text file
+            Output(i);   // Outputs to csv file for each aircraft index
+            Output_1File(i); // Outputs to A SINGLE csv file for all collisions 
             *total_collisions += 1;
         }
     }

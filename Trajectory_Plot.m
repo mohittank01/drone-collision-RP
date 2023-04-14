@@ -36,10 +36,7 @@ hold on
 view([35 10 5])
 aircraft_dot = plot3(longitude(aircraft_index(index_select)), latitude(aircraft_index(index_select)), altitude(aircraft_index(index_select)),'o','MarkerFaceColor','red');
 grid on
-plot3(drone_data(1:1*vector_length,1),drone_data(1:1*vector_length,2),drone_data(1:1*vector_length,3),'-b') 
-
-[A,map] = rgb2ind(frame2im(getframe),1000);
-imwrite(A,map,'test.gif','LoopCount',65535,'DelayTime',0.01);
+%plot3(drone_data(1:1*vector_length,1),drone_data(1:1*vector_length,2),drone_data(1:1*vector_length,3),'-b') 
 
 for i = 1:7
    drone_long = drone_data(i*vector_length+1:(i+1)*vector_length,1);
@@ -56,10 +53,6 @@ for i = 1:7
         drone_dot.YData = drone_lat(k);
         drone_dot.ZData = drone_alt(k);
         drawnow 
-        if(mod(k,20)==0)
-        [A,map] = rgb2ind(frame2im(getframe),1000);
-        imwrite(A,map,'test.gif','WriteMode','append','DelayTime',0.01);
-        end
    end
 end
 hold off

@@ -43,6 +43,7 @@ class Drone{
     void SecondStage();
     bool Collision();
     void Output(int run_no);
+    void Output_1File(int run_no);
     void Deallocate();
 
     double* aircraft_longitude;
@@ -69,17 +70,20 @@ class Drone{
 
     int depart_or_arrive;
 
-    public:
-
-    void SetInitialParameters(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input);
-    void Simulation(int number_runs, double* total_collisions);
-    void ClearOutput(int Aircraft_Index);
+    int* collision_index;
 
     double* longitude_vector;
     double* latitude_vector;
     double* altitude_vector;
     double* speed_vector;
     double* heading_vector;
+
+    public:
+
+    void SetInitialParameters(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input);
+    void Simulation(int number_runs, double* total_collisions);
+    void ClearOutput(int Aircraft_Index);
+    void ClearOutput_1File();
 
 
 };
