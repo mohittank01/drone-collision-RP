@@ -275,6 +275,19 @@ void Drone::Output(int run_no){
     outfile.close();
 }
 
+void Drone::Output_Collision_Num(double* local_collisions){
+    string aircraft_index = to_string(AircraftIndex);
+    ofstream outfile;
+    outfile.open("Drone_Collisions/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
+    outfile << *local_collisions;
+}
+
+void Drone::Output_1File_Collision_Num(double* total_collisions){
+    ofstream outfile1;
+    outfile1.open("All_Drone_Collisions.csv", ofstream::out | ofstream::app);
+    outfile1 << *total_collisions;
+}
+
 void Drone::Deallocate(){
     delete[] longitude_vector;
     delete[] latitude_vector;
@@ -301,7 +314,7 @@ bool Drone::Collision(){
 
 
 
-void Drone::Simulation(int number_runs, double* total_collisions){
+void Drone::Simulation(int number_runs, double* total_collisions, double* local_collisions){
     SetInitialConditions();
     int i;
     //#pragma omp parallel for private(i) firstprivate(longitude_vector, latitude_vector, altitude_vector, heading_vector, speed_vector) shared(total_collisions)
@@ -311,6 +324,7 @@ void Drone::Simulation(int number_runs, double* total_collisions){
         if (Collision()){
             Output(i);   // Outputs to csv file for each aircraft index
             Output_1File(i); // Outputs to A SINGLE csv file for all collisions 
+            *local_collisions += 1;
             *total_collisions += 1;
         }
     }

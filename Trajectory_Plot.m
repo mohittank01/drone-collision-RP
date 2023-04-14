@@ -38,7 +38,7 @@ aircraft_dot = plot3(longitude(aircraft_index(index_select)), latitude(aircraft_
 grid on
 %plot3(drone_data(1:1*vector_length,1),drone_data(1:1*vector_length,2),drone_data(1:1*vector_length,3),'-b') 
 
-for i = 1:7
+for i = 1:drone_data(end,1)-1
    drone_long = drone_data(i*vector_length+1:(i+1)*vector_length,1);
    drone_lat = drone_data(i*vector_length+1:(i+1)*vector_length,2);
    drone_alt = drone_data(i*vector_length+1:(i+1)*vector_length,3);
@@ -67,7 +67,7 @@ hold on
 grid on
 title("Longitude vs Latitude")
 plot(drone_data(1:1*vector_length,1),drone_data(1:1*vector_length,2),'-b','DisplayName','Drone') 
-for i = 1:7
+for i = 1:drone_data(end,1)-1
    plot(drone_data(i*vector_length+1:(i+1)*vector_length,1),drone_data(i*vector_length+1:(i+1)*vector_length,2),'-b','HandleVisibility','off')
    plot(drone_data(i*vector_length+1,1),drone_data(i*vector_length+1,2),'rx','HandleVisibility','off') 
 end
@@ -84,7 +84,7 @@ hold on
 grid on
 title("Longitude vs Altitude")
 plot(drone_data(1:1*vector_length,1),drone_data(1:1*vector_length,3),'-b','DisplayName','Drone') 
-for i = 1:7
+for i = 1:drone_data(end,1)-1
    plot(drone_data(i*vector_length+1:(i+1)*vector_length,1),drone_data(i*vector_length+1:(i+1)*vector_length,3),'-b','HandleVisibility','off')
    plot(drone_data(i*vector_length+1,1),drone_data(i*vector_length+1,3),'rx','HandleVisibility','off') 
 end
@@ -97,7 +97,7 @@ hold on
 grid on
 title("Latitude vs Altitude")
 plot(drone_data(1:1*vector_length,2),drone_data(1:1*vector_length,3),'-b','DisplayName','Drone') 
-for i = 1:7
+for i = 1:drone_data(end,1)-1
    plot(drone_data(i*vector_length+1:(i+1)*vector_length,2),drone_data(i*vector_length+1:(i+1)*vector_length,3),'-b','HandleVisibility','off')
    plot(drone_data(i*vector_length+1,2),drone_data(i*vector_length+1,3),'rx','HandleVisibility','off') 
 end

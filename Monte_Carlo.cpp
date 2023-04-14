@@ -21,6 +21,9 @@ int main(){
   double* total_collisions = new double[1];
   *total_collisions = 0;
 
+  
+
+
   Aircraft Aircraft;
   Drone Drone;
 
@@ -32,12 +35,16 @@ int main(){
   for(i=0; i < 10; ++i){
     Aircraft.Vector_Allocation(i);
     Drone.ClearOutput(i);
+    double* local_collisions = new double[1];
+    *local_collisions = 0;
     for(int j=0; j < drone_total; ++j){
       Drone.SetInitialParameters(FilePath_drone, Aircraft.Vector_length, no_col_drone, j, i, Aircraft.takeoff_t, Aircraft.longitude_vector, Aircraft.latitude_vector, Aircraft.altitude_vector, aircraft_radius, drone_radius);
-      Drone.Simulation(10000, total_collisions);
+      Drone.Simulation(10000, total_collisions, local_collisions);
     }
+    Drone.Output_Collision_Num(local_collisions);
     Aircraft.Deallocation(); // PLAY AROUND WITH THIS LINE
 
   }
+  Drone.Output_1File_Collision_Num(total_collisions);
   cout << "Number of collisions: " << *total_collisions << endl;
  }
