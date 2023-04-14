@@ -2,7 +2,9 @@ clear
 clc
 close all
 
-drone_data = importdata("Drone_Collisions/Drone_coords_0.csv");
+distance_from_airport = "1";
+
+drone_data = importdata("Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_0.csv");
 drone_position = importdata("drone_inital_positions_1km.csv");
 aircraft_data = importdata("TAKEOFF_UTM_DEPART_A320 LHR time - 2017-06-30 04-00 to 2017-06-30 23-45.csv");
 
@@ -31,19 +33,36 @@ index_select = 1;
 vector_length = length(longitude(aircraft_index(index_select):aircraft_index(index_select+1)-1));
 
 figure
-plot3(longitude(aircraft_index(index_select):aircraft_index(index_select+1)-1), latitude(aircraft_index(index_select):aircraft_index(index_select+1)-1), altitude(aircraft_index(index_select):aircraft_index(index_select+1)-1),'r')
+plot3(longitude(aircraft_index(index_select):aircraft_index(index_select+1)-1), latitude(aircraft_index(index_select):aircraft_index(index_select+1)-1), altitude(aircraft_index(index_select):aircraft_index(index_select+1)-1),'r','DisplayName','Aircraft')
 hold on
-view([35 10 5])
-aircraft_dot = plot3(longitude(aircraft_index(index_select)), latitude(aircraft_index(index_select)), altitude(aircraft_index(index_select)),'o','MarkerFaceColor','red');
+xlabel("Longitude / UTM")
+ylabel("Latitude / UTM")
+zlabel("Altitude/ m")
+legend
+view([35 25 5])
+aircraft_dot = plot3(longitude(aircraft_index(index_select)), latitude(aircraft_index(index_select)), altitude(aircraft_index(index_select)),'o','MarkerFaceColor','red','HandleVisibility','off');
 grid on
-%plot3(drone_data(1:1*vector_length,1),drone_data(1:1*vector_length,2),drone_data(1:1*vector_length,3),'-b') 
+plot3(drone_data(1:1*vector_length,1),drone_data(1:1*vector_length,2),drone_data(1:1*vector_length,3),'-b','DisplayName','Drone')
+drone_dot = plot3(drone_data(1,1),drone_data(1,2),drone_data(1,3),'o','MarkerFaceColor','black','HandleVisibility','off');
+drone_long = drone_data(1:1*vector_length,1);
+drone_lat = drone_data(1:1*vector_length,2);
+drone_alt = drone_data(1:1*vector_length,3);
+for k = 2:vector_length
+    aircraft_dot.XData = longitude(aircraft_index(index_select)+k);
+    aircraft_dot.YData = latitude(aircraft_index(index_select)+k);
+    aircraft_dot.ZData = altitude(aircraft_index(index_select)+k);
+    drone_dot.XData = drone_long(k);
+    drone_dot.YData = drone_lat(k);
+    drone_dot.ZData = drone_alt(k);
+    drawnow 
+end
 
 for i = 1:drone_data(end,1)-1
    drone_long = drone_data(i*vector_length+1:(i+1)*vector_length,1);
    drone_lat = drone_data(i*vector_length+1:(i+1)*vector_length,2);
    drone_alt = drone_data(i*vector_length+1:(i+1)*vector_length,3);
-   plot3(drone_long,drone_lat,drone_alt,'-b')
-   drone_dot = plot3(drone_data(i*vector_length+1,1),drone_data(i*vector_length+1,2),drone_data(i*vector_length+1,3),'o','MarkerFaceColor','black');
+   plot3(drone_long,drone_lat,drone_alt,'-b','HandleVisibility','off')
+   drone_dot = plot3(drone_data(i*vector_length+1,1),drone_data(i*vector_length+1,2),drone_data(i*vector_length+1,3),'o','MarkerFaceColor','black','HandleVisibility','off');
 
    for k = 2:vector_length
         aircraft_dot.XData = longitude(aircraft_index(index_select)+k);
@@ -71,9 +90,9 @@ for i = 1:drone_data(end,1)-1
    plot(drone_data(i*vector_length+1:(i+1)*vector_length,1),drone_data(i*vector_length+1:(i+1)*vector_length,2),'-b','HandleVisibility','off')
    plot(drone_data(i*vector_length+1,1),drone_data(i*vector_length+1,2),'rx','HandleVisibility','off') 
 end
-for i = 1:length(drone_pos_latitude)
-   plot(drone_pos_longitude(i),drone_pos_latitude(i),'rx','HandleVisibility','off') 
-end
+% for i = 1:length(drone_pos_latitude)
+%    plot(drone_pos_longitude(i),drone_pos_latitude(i),'rx','HandleVisibility','off') 
+% end
 axis equal
 legend
 hold off
