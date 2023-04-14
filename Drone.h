@@ -42,8 +42,8 @@ class Drone{
     void CubedVolume();
     void SecondStage();
     bool Collision();
-    void Output(int run_no);
-    void Output_1File(int run_no);
+    void Output(int run_no, string distance_from_airport);
+    void Output_1File(int run_no, string distance_from_airport);
     void Deallocate();
 
     double* aircraft_longitude;
@@ -82,11 +82,11 @@ class Drone{
     public:
 
     void SetInitialParameters(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input);
-    void Simulation(int number_runs, double* total_collisions, double* local_collisions);
-    void Output_Collision_Num(double* local_collisions);
-    void ClearOutput(int Aircraft_Index);
-    void ClearOutput_1File();
-    void Output_1File_Collision_Num(double* total_collisions);
+    void Simulation(int number_runs, double* total_collisions, double* local_collisions, string distance_from_airport);
+    void Output_Collision_Num(double* local_collisions, string distance_from_airport);
+    void ClearOutput(int Aircraft_Index, string distance_from_airport);
+    void ClearOutput_1File(string distance_from_airport);
+    void Output_1File_Collision_Num(double* total_collisions, string distance_from_airport);
 
 
 };

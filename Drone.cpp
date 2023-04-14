@@ -60,16 +60,16 @@ void Drone::SetInitialParameters(string FilePath_input, int Vector_length_input,
     max_ascend_speed = 8.0;
 }
 
-void Drone::ClearOutput(int Aircraft_Index){
+void Drone::ClearOutput(int Aircraft_Index, string distance_from_airport){
     string aircraft_index = to_string(Aircraft_Index);
     ofstream outfile;
-    outfile.open("Drone_Collisions/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::trunc);
+    outfile.open("Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::trunc);
     outfile.close();
 }
 
-void Drone::ClearOutput_1File(){
+void Drone::ClearOutput_1File(string distance_from_airport){
     ofstream outfile;
-    outfile.open("All_Drone_Collisions.csv", ofstream::out | ofstream::trunc);
+    outfile.open("Drone_Collisions_" + distance_from_airport + "_km/All_Drone_Collisions.csv", ofstream::out | ofstream::trunc);
     outfile.close();
 }
 
@@ -241,10 +241,10 @@ void Drone::SecondStage(){
     }
 }
 
-void Drone::Output_1File(int run_no){
+void Drone::Output_1File(int run_no, string distance_from_airport){
     string aircraft_index = to_string(AircraftIndex);
     ofstream outfile1;
-    outfile1.open("All_Drone_Collisions.csv", ofstream::out | ofstream::app);
+    outfile1.open("Drone_Collisions_" + distance_from_airport + "_km/All_Drone_Collisions.csv", ofstream::out | ofstream::app);
     outfile1.precision(10);
     for (int i=0; i < VectorLength; ++i){
         if(i == *collision_index){
@@ -258,10 +258,10 @@ void Drone::Output_1File(int run_no){
     outfile1.close();
 }
 
-void Drone::Output(int run_no){
+void Drone::Output(int run_no, string distance_from_airport){
     string aircraft_index = to_string(AircraftIndex);
     ofstream outfile;
-    outfile.open("Drone_Collisions/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
+    outfile.open("Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
     outfile.precision(10);
     for (int i=0; i < VectorLength; ++i){
         if(i == *collision_index){
@@ -275,16 +275,16 @@ void Drone::Output(int run_no){
     outfile.close();
 }
 
-void Drone::Output_Collision_Num(double* local_collisions){
+void Drone::Output_Collision_Num(double* local_collisions, string distance_from_airport){
     string aircraft_index = to_string(AircraftIndex);
     ofstream outfile;
-    outfile.open("Drone_Collisions/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
+    outfile.open("Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
     outfile << *local_collisions;
 }
 
-void Drone::Output_1File_Collision_Num(double* total_collisions){
+void Drone::Output_1File_Collision_Num(double* total_collisions, string distance_from_airport){
     ofstream outfile1;
-    outfile1.open("All_Drone_Collisions.csv", ofstream::out | ofstream::app);
+    outfile1.open("Drone_Collisions_" + distance_from_airport + "_km/All_Drone_Collisions.csv", ofstream::out | ofstream::app);
     outfile1 << *total_collisions;
 }
 
@@ -314,7 +314,7 @@ bool Drone::Collision(){
 
 
 
-void Drone::Simulation(int number_runs, double* total_collisions, double* local_collisions){
+void Drone::Simulation(int number_runs, double* total_collisions, double* local_collisions, string distance_from_airport){
     SetInitialConditions();
     int i;
     //#pragma omp parallel for private(i) firstprivate(longitude_vector, latitude_vector, altitude_vector, heading_vector, speed_vector) shared(total_collisions)
@@ -322,8 +322,8 @@ void Drone::Simulation(int number_runs, double* total_collisions, double* local_
         FirstStage();   // Drone heads towards centre of runway
         SecondStage();  // Drone heads towards random coords in volume
         if (Collision()){
-            Output(i);   // Outputs to csv file for each aircraft index
-            Output_1File(i); // Outputs to A SINGLE csv file for all collisions 
+            Output(i, distance_from_airport);   // Outputs to csv file for each aircraft index
+            Output_1File(i, distance_from_airport); // Outputs to A SINGLE csv file for all collisions 
             *local_collisions += 1;
             *total_collisions += 1;
         }

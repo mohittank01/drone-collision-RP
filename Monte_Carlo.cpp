@@ -13,7 +13,8 @@ int main(){
   int no_col_aircraft = 22;
   double aircraft_radius = 3.5;
 
-  string FilePath_drone = "drone_inital_positions_1km.csv"; /// THIS CHANGES EVERYTHING
+  string distance_from_airport = "5";
+  string FilePath_drone = "drone_inital_positions_" + distance_from_airport + "km.csv"; /// THIS CHANGES EVERYTHING
   int no_col_drone = 4;
   int drone_total = 99;
   double drone_radius = 0.19;
@@ -28,23 +29,23 @@ int main(){
   Drone Drone;
 
   Aircraft.Set_Parameters_and_Data(FilePath_aircraft, no_col_aircraft);
-  Drone.ClearOutput_1File();
+  Drone.ClearOutput_1File(distance_from_airport);
   int i;
 
   #pragma omp parallel for private(i) firstprivate(Aircraft,Drone)
   for(i=0; i < 10; ++i){
     Aircraft.Vector_Allocation(i);
-    Drone.ClearOutput(i);
+    Drone.ClearOutput(i, distance_from_airport);
     double* local_collisions = new double[1];
     *local_collisions = 0;
     for(int j=0; j < drone_total; ++j){
       Drone.SetInitialParameters(FilePath_drone, Aircraft.Vector_length, no_col_drone, j, i, Aircraft.takeoff_t, Aircraft.longitude_vector, Aircraft.latitude_vector, Aircraft.altitude_vector, aircraft_radius, drone_radius);
-      Drone.Simulation(10000, total_collisions, local_collisions);
+      Drone.Simulation(10000, total_collisions, local_collisions, distance_from_airport);
     }
-    Drone.Output_Collision_Num(local_collisions);
+    Drone.Output_Collision_Num(local_collisions, distance_from_airport);
     Aircraft.Deallocation(); // PLAY AROUND WITH THIS LINE
 
   }
-  Drone.Output_1File_Collision_Num(total_collisions);
+  Drone.Output_1File_Collision_Num(total_collisions, distance_from_airport);
   cout << "Number of collisions: " << *total_collisions << endl;
  }
