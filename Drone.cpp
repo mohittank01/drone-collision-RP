@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void Drone::SetInitialParameters(string FilePath_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input){
+void Drone::SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input){
     FilePath = FilePath_input;
     VectorLength = Vector_length_input;
     TotalCols = TotalCols_input;
@@ -18,6 +18,7 @@ void Drone::SetInitialParameters(string FilePath_input, int Vector_length_input,
     TakeoffTime = takeoff_time_input;
     AircraftRadius = aircraft_radius_input;
     DroneRadius = drone_radius_input;
+    Airport = Airport_input;
 
     // Column numbers
     longitude_col_no = 1;
@@ -60,16 +61,16 @@ void Drone::SetInitialParameters(string FilePath_input, int Vector_length_input,
     max_ascend_speed = 8.0;
 }
 
-void Drone::ClearOutput(int Aircraft_Index, string distance_from_airport){
+void Drone::ClearOutput(int Aircraft_Index, string distance_from_airport, string Airport_input){
     string aircraft_index = to_string(Aircraft_Index);
     ofstream outfile;
-    outfile.open("Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::trunc);
+    outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::trunc);
     outfile.close();
 }
 
-void Drone::ClearOutput_1File(string distance_from_airport){
+void Drone::ClearOutput_1File(string distance_from_airport, string Airport_input){
     ofstream outfile;
-    outfile.open("Drone_Collisions_" + distance_from_airport + "_km/All_Drone_Collisions.csv", ofstream::out | ofstream::trunc);
+    outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/All_Drone_Collisions.csv", ofstream::out | ofstream::trunc);
     outfile.close();
 }
 
@@ -244,7 +245,7 @@ void Drone::SecondStage(){
 void Drone::Output_1File(int run_no, string distance_from_airport){
     string aircraft_index = to_string(AircraftIndex);
     ofstream outfile1;
-    outfile1.open("Drone_Collisions_" + distance_from_airport + "_km/All_Drone_Collisions.csv", ofstream::out | ofstream::app);
+    outfile1.open(Airport + "/Drone_Collisions_" + distance_from_airport + "_km/All_Drone_Collisions.csv", ofstream::out | ofstream::app);
     outfile1.precision(10);
     for (int i=0; i < VectorLength; ++i){
         if(i == *collision_index){
@@ -261,7 +262,7 @@ void Drone::Output_1File(int run_no, string distance_from_airport){
 void Drone::Output(int run_no, string distance_from_airport){
     string aircraft_index = to_string(AircraftIndex);
     ofstream outfile;
-    outfile.open("Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
+    outfile.open(Airport + "/Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
     outfile.precision(10);
     for (int i=0; i < VectorLength; ++i){
         if(i == *collision_index){
@@ -278,13 +279,13 @@ void Drone::Output(int run_no, string distance_from_airport){
 void Drone::Output_Collision_Num(double* local_collisions, string distance_from_airport){
     string aircraft_index = to_string(AircraftIndex);
     ofstream outfile;
-    outfile.open("Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
+    outfile.open(Airport + "/Drone_Collisions_" + distance_from_airport + "_km/Drone_coords_" + aircraft_index + ".csv", ofstream::out | ofstream::app);
     outfile << *local_collisions;
 }
 
-void Drone::Output_1File_Collision_Num(double* total_collisions, string distance_from_airport){
+void Drone::Output_1File_Collision_Num(double* total_collisions, string distance_from_airport, string Airport_input){
     ofstream outfile1;
-    outfile1.open("Drone_Collisions_" + distance_from_airport + "_km/All_Drone_Collisions.csv", ofstream::out | ofstream::app);
+    outfile1.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/All_Drone_Collisions.csv", ofstream::out | ofstream::app);
     outfile1 << *total_collisions;
 }
 
