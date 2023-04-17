@@ -22,6 +22,8 @@ void Aircraft::Set_Parameters_and_Data(string File_Path, int no_cols){
     groundspeed = 8;
     // Onground Column number
     onground = 15;
+    // Heading Column number
+    track = 20;
 
 
     CSVData();
@@ -119,11 +121,13 @@ void Aircraft::Vector_Allocation(int index_input){
     latitude_vector = new double[Vector_length];
     altitude_vector = new double[Vector_length];
     groundspeed_vector = new double[Vector_length];
+    track_vector = new double[Vector_length];
 
     ColumnSelect(longitude, longitude_vector);
     ColumnSelect(latitude, latitude_vector);
     ColumnSelect(altitude, altitude_vector);
     ColumnSelect(groundspeed, groundspeed_vector);
+    ColumnSelect(track, track_vector);
 
 }
 
@@ -132,6 +136,7 @@ void Aircraft::Deallocation(){
     delete[] latitude_vector;
     delete[] altitude_vector;
     delete[] groundspeed_vector;
+    delete[] track_vector;
     Single_Aircraft.clear();
 }
 

@@ -50,6 +50,7 @@ class Drone{
     double* aircraft_longitude;
     double* aircraft_latitude;
     double* aircraft_altitude;
+    double* aircraft_tracking;
 
     double max_straight_speed;
     double max_ascend_speed;
@@ -69,6 +70,14 @@ class Drone{
     double min_cube_alt;
     double max_cube_alt;
 
+    double gradient1;
+    double gradient2;
+
+    double* point1_LGW;
+    double* point2_LGW;
+    double* point3_LGW;
+    double* point4_LGW;
+
     int depart_or_arrive;
 
     int* collision_index;
@@ -82,7 +91,7 @@ class Drone{
 
     public:
 
-    void SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input);
+    void SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double* air_track, double aircraft_radius_input, double drone_radius_input);
     void Simulation(int number_runs, double* total_collisions, double* local_collisions, string distance_from_airport);
     void Output_Collision_Num(double* local_collisions, string distance_from_airport);
     void ClearOutput(int Aircraft_Index, string distance_from_airport, string Airport_input);

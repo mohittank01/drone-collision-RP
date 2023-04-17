@@ -15,6 +15,7 @@ class Aircraft{
     int altitude;
     int groundspeed;
     int onground;
+    int track;
 
 
     string FilePath;
@@ -46,6 +47,7 @@ class Aircraft{
     double* latitude_vector;
     double* altitude_vector;
     double* groundspeed_vector;
+    double* track_vector;
 
 };
 

@@ -40,7 +40,7 @@ int main(){
     double* local_collisions = new double[1];
     *local_collisions = 0;
     for(int j=0; j < drone_total; ++j){
-      Drone.SetInitialParameters(FilePath_drone, Airport, Aircraft.Vector_length, no_col_drone, j, i, Aircraft.takeoff_t, Aircraft.longitude_vector, Aircraft.latitude_vector, Aircraft.altitude_vector, aircraft_radius, drone_radius);
+      Drone.SetInitialParameters(FilePath_drone, Airport, Aircraft.Vector_length, no_col_drone, j, i, Aircraft.takeoff_t, Aircraft.longitude_vector, Aircraft.latitude_vector, Aircraft.altitude_vector, Aircraft.track_vector, aircraft_radius, drone_radius);
       Drone.Simulation(10000, total_collisions, local_collisions, distance_from_airport);
     }
     Drone.Output_Collision_Num(local_collisions, distance_from_airport);

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void Drone::SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double aircraft_radius_input, double drone_radius_input){
+void Drone::SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double* air_track, double aircraft_radius_input, double drone_radius_input){
     FilePath = FilePath_input;
     VectorLength = Vector_length_input;
     TotalCols = TotalCols_input;
@@ -42,6 +42,9 @@ void Drone::SetInitialParameters(string FilePath_input, string Airport_input, in
     aircraft_longitude = new double[VectorLength];
     aircraft_latitude = new double[VectorLength];
     aircraft_altitude = new double[VectorLength];
+    aircraft_tracking = new double[1];
+
+    aircraft_tracking[0] = air_track[0];
 
     for(int i = 0; i < VectorLength; ++i){
         aircraft_longitude[i] = air_long[i];
@@ -139,49 +142,121 @@ void Drone::FirstStage(){
 }
 
 void Drone::CubedVolume(){
-    // LHR
+    
     min_cube_alt = 100;
     max_cube_alt = min_cube_alt + 400; // ADDING 400m TO THE MIN ALTITUDE
 
-    // 27R
-    if(aircraft_latitude[0] <= 5706340.62 && aircraft_latitude[0] >= 5705792.58){
-        min_cube_lat = 5705770.46;
-        max_cube_lat = min_cube_lat + 500; // ADDING 500m TO THE MIN FOR THE RUNWAY WIDTH
-        if(depart_or_arrive){ // ARRIVAL
-            min_cube_long = 676345.60;
-            max_cube_long = min_cube_long + 5000;
+    if(Airport == "LHR"){
+        // 27R
+        if(aircraft_latitude[0] <= 5706340.62 && aircraft_latitude[0] >= 5705792.58){
+            min_cube_lat = 5705770.46;
+            max_cube_lat = min_cube_lat + 500; // ADDING 500m TO THE MIN FOR THE RUNWAY WIDTH
+            if(depart_or_arrive){ // ARRIVAL
+                min_cube_long = 676345.60;
+                max_cube_long = min_cube_long + 5000;
+            }
+            else{ // DEPARTURE
+                max_cube_long = 676819.02; 
+                min_cube_long = max_cube_long - 5000; // FOR THE LENGTH OF THE CUBED VOLUME - 5000m
+            }
         }
-        else{ // DEPARTURE
-            max_cube_long = 676819.02; 
-            min_cube_long = max_cube_long - 5000; // FOR THE LENGTH OF THE CUBED VOLUME - 5000m
+        // 27L
+        else if(aircraft_latitude[0] <= 5705065.74 && aircraft_latitude[0] >= 5704388.38){
+            max_cube_lat = 5704800.46;
+            min_cube_lat = max_cube_lat - 500; // MINUS 500m TO THE MAX FOR THE RUNWAY WIDTH
+
+            if(depart_or_arrive){ // ARRIVAL
+                min_cube_long = 676345.60;
+                max_cube_long = min_cube_long + 5000;
+            }
+            else{ // DEPARTURE
+                max_cube_long = 676819.02; 
+                min_cube_long = max_cube_long - 5000; // FOR THE LENGTH OF THE CUBED VOLUME - 5000m
+            }
         }
     }
-    // 27L
-    else if(aircraft_latitude[0] <= 5705065.74 && aircraft_latitude[0] >= 5704388.38){
-        max_cube_lat = 5704800.46;
-        min_cube_lat = max_cube_lat - 500; // MINUS 500m TO THE MAX FOR THE RUNWAY WIDTH
 
-        if(depart_or_arrive == 1){ // ARRIVAL
-            min_cube_long = 676345.60;
-            max_cube_long = min_cube_long + 5000;
+    if(Airport == "LGW"){
+        point1_LGW = new double[2];
+        point2_LGW = new double[2];
+        point3_LGW = new double[2];
+        point4_LGW = new double[2];
+        
+        if(depart_or_arrive){
+            if(aircraft_tracking[0] > 255.0 && aircraft_tracking[0] < 265.0){ // 26R LANDING
+                point1_LGW[0] = 5670298.36;
+                point1_LGW[1] = 696273.48;
+
+                point2_LGW[0] = 5669793.32;
+                point2_LGW[1] = 696355.00;
+
+                point3_LGW[0] = 5671632.00;
+                point3_LGW[1] = 701561.40;
+
+                point4_LGW[0] = 5671175.08;
+                point4_LGW[1] = 701701.79;
+            }
+
+            else{ // 08R LANDING
+                point1_LGW[0] = 5669096.94;
+                point1_LGW[1] = 691688.59;
+
+                point2_LGW[0] = 5668694.73;
+                point2_LGW[1] = 691835.89;
+
+                point3_LGW[0] = 5670256.18;
+                point3_LGW[1] = 696627.25;
+
+                point4_LGW[0] = 5669899.33;
+                point4_LGW[1] = 696717.45;
+            }
+            
+
         }
-        else{ // DEPARTURE
-            max_cube_long = 676819.02; 
-            min_cube_long = max_cube_long - 5000; // FOR THE LENGTH OF THE CUBED VOLUME - 5000m
+        else{ // DEPARTURE 
+            if(aircraft_tracking[0] >= 75.0 && aircraft_tracking[0] <= 85.0){ // 08R TAKEOFF
+                point1_LGW[0] = 5670298.36;
+                point1_LGW[1] = 696273.48;
+
+                point2_LGW[0] = 5669793.32;
+                point2_LGW[1] = 696355.00;
+
+                point3_LGW[0] = 5671632.00;
+                point3_LGW[1] = 701561.40;
+
+                point4_LGW[0] = 5671175.08;
+                point4_LGW[1] = 701701.79;
+            }
+            else{ // 26R LANDING
+                point1_LGW[0] = 5669096.94;
+                point1_LGW[1] = 691688.59;
+
+                point2_LGW[0] = 5668694.73;
+                point2_LGW[1] = 691835.89;
+
+                point3_LGW[0] = 5670256.18;
+                point3_LGW[1] = 696627.25;
+
+                point4_LGW[0] = 5669899.33;
+                point4_LGW[1] = 696717.45;
+            }
         }
+
+        max_cube_lat = point3_LGW[0];
+        max_cube_long = point4_LGW[1];
+
+        min_cube_lat = point2_LGW[0];
+        min_cube_long = point1_LGW[1];
+
+        gradient1 = (max_cube_lat - point1_LGW[0])/(point3_LGW[1] - min_cube_long);
+        gradient2 = (point4_LGW[0] - min_cube_lat)/(max_cube_long - point2_LGW[1]);
+
     }
 }
 
 
 void Drone::SecondStage(){
     CubedVolume();
-
-    // Seed generator
-    //random_device seed;
-    //mt19937 engine(seed());
-    default_random_engine engine_1{random_device{}()};
-    default_random_engine engine_2{random_device{}()};
-    default_random_engine engine_3{random_device{}()};
     
     // Uniform distribution - LONGITUDE
     uniform_real_distribution<double> long_dist(min_cube_long, max_cube_long); // uniform, unbiased
@@ -192,12 +267,50 @@ void Drone::SecondStage(){
     // Uniform distribution - ALTITUDE
     uniform_real_distribution<double> alt_dist(min_cube_alt, max_cube_alt); // uniform, unbiased
 
-    random_long = long_dist(engine_1);
-    //random_long = (rand() / (double)RAND_MAX) * (max_cube_long-min_cube_long) + min_cube_long;
-    random_lat = lat_dist(engine_2);
-    //random_lat = (rand() / (double)RAND_MAX) * (max_cube_lat-min_cube_lat) + min_cube_lat;
-    random_alt = alt_dist(engine_3);
-    //random_alt = (rand() / (double)RAND_MAX) * (max_cube_alt-min_cube_alt) + min_cube_alt;
+    if(Airport == "LHR"){
+        // Seed generator
+        //random_device seed;
+        default_random_engine engine_1{random_device{}()};
+        default_random_engine engine_2{random_device{}()};
+        default_random_engine engine_3{random_device{}()};
+
+        random_long = long_dist(engine_1);
+        random_lat = lat_dist(engine_2);
+        random_alt = alt_dist(engine_3);
+
+    }
+
+
+
+    if(Airport == "LGW"){
+        bool validPosition = false;
+        while (!validPosition)
+        {
+            default_random_engine engine_1{random_device{}()};
+            default_random_engine engine_2{random_device{}()};
+            default_random_engine engine_3{random_device{}()};
+
+            random_long = long_dist(engine_1);
+            random_lat = lat_dist(engine_2);
+            random_alt = alt_dist(engine_3);
+
+            if(random_lat > point1_LGW[0] && random_long < point3_LGW[1]){
+                double dummy_lat = gradient1*random_long; // Maximum value of latitude that it can be within diagonal rectangle.
+                if((random_lat - point1_LGW[0]) < dummy_lat){
+                    validPosition = true;
+                }
+            }
+
+            if(random_long > point2_LGW[1] && random_lat < point4_LGW[0]){
+                double dummy_lat = gradient2 * random_long;
+                if((random_lat - point2_LGW[0]) > dummy_lat){
+                    validPosition = true;
+                }
+            }
+            
+        }
+        
+    }
 
     double pitch_angle;
     double modulus_long_lat;
