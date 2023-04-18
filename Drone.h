@@ -15,6 +15,7 @@ class Drone{
     int DroneIndex;
     int AircraftIndex;
     int TakeoffTime;
+    int ArriveTime;
 
     double AircraftRadius;
     double DroneRadius;
@@ -54,6 +55,7 @@ class Drone{
 
     double max_straight_speed;
     double max_ascend_speed;
+    double max_descend_speed;
     double start_alt;
 
     int random_t_1st;
@@ -91,12 +93,12 @@ class Drone{
 
     public:
 
-    void SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, double* air_long, double* air_lat, double* air_alt, double* air_track, double aircraft_radius_input, double drone_radius_input);
+    void SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, int arrive_time_input, double* air_long, double* air_lat, double* air_alt, double* air_track, double aircraft_radius_input, double drone_radius_input);
     void Simulation(int number_runs, double* total_collisions, double* local_collisions, string distance_from_airport);
     void Output_Collision_Num(double* local_collisions, string distance_from_airport);
-    void ClearOutput(int Aircraft_Index, string distance_from_airport, string Airport_input);
-    void ClearOutput_1File(string distance_from_airport, string Airport_input);
-    void Output_1File_Collision_Num(double* total_collisions, string distance_from_airport, string Airport_input);
+    void ClearOutput(int Aircraft_Index, string distance_from_airport, string Airport_input, int depart_or_arrive);
+    void ClearOutput_1File(string distance_from_airport, string Airport_input, int depart_or_arrive);
+    void Output_1File_Collision_Num(double* total_collisions, string distance_from_airport, string Airport_input, int depart_or_arrive);
 
 
 };

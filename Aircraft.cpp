@@ -111,10 +111,21 @@ void Aircraft::Takeoff_Time(){
     }
 }
 
+void Aircraft::Arrive_Time(){
+    arrive_t = 0;
+    for(int i = 0; i < Single_Aircraft_size / TotalCols; ++i){
+        if(stod(Single_Aircraft[i*TotalCols + altitude]) <= 350.0){
+            break;
+        }
+        arrive_t += 1;
+    }
+}
+
 
 void Aircraft::Vector_Allocation(int index_input){
     SingleAircraft(index_input);
     Takeoff_Time();
+    Arrive_Time();
     Vector_length = Single_Aircraft_size/TotalCols;
 
     longitude_vector = new double[Vector_length];

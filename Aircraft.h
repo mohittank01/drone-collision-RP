@@ -31,6 +31,7 @@ class Aircraft{
     void SingleAircraft(int index);
     void ColumnSelect(int column_no, double* column_pointer);
     void Takeoff_Time();
+    void Arrive_Time();
 
     void PrintAircraft();
 
@@ -40,6 +41,7 @@ class Aircraft{
     void Deallocation();
     int Vector_length;
     int takeoff_t;
+    int arrive_t;
 
     int Aircraft_Index_size;
 
