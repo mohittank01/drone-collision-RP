@@ -24,6 +24,8 @@ void Aircraft::Set_Parameters_and_Data(string File_Path, int no_cols){
     onground = 15;
     // Heading Column number
     track = 20;
+    // Aiport Destination number
+    airport_dest = 5;
 
 
     CSVData();
@@ -113,11 +115,23 @@ void Aircraft::Takeoff_Time(){
 
 void Aircraft::Arrive_Time(){
     arrive_t = 0;
-    for(int i = 0; i < Single_Aircraft_size / TotalCols; ++i){
-        if(stod(Single_Aircraft[i*TotalCols + altitude]) <= 350.0){
-            break;
+
+    if(Single_Aircraft[0*TotalCols + airport_dest] == "EGKK"){
+        for(int i = 0; i < Single_Aircraft_size / TotalCols; ++i){
+            if(stod(Single_Aircraft[i*TotalCols + altitude]) <= 225.0){
+                break;
+            }
+            arrive_t += 1;
         }
-        arrive_t += 1;
+    }
+
+    if(Single_Aircraft[0*TotalCols + airport_dest] == "EGLL"){
+        for(int i = 0; i < Single_Aircraft_size / TotalCols; ++i){
+            if(stod(Single_Aircraft[i*TotalCols + altitude]) <= 350.0){
+                break;
+            }
+            arrive_t += 1;
+        }
     }
 }
 

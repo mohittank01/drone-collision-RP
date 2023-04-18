@@ -9,11 +9,11 @@ using namespace std;
 int main(){
 
   string FilePath_aircraft;
-  
+
   // VARIABLES TO CHANGE 
   string Airport = "LHR";
-  int depart_or_arrive = 1; // 0 - DEPART 1 - ARRIVE
-  string distance_from_airport = "1"; // DISTANCE FROM CENTRE OF RUNWAY
+  int depart_or_arrive = 0; // 0 - DEPART 1 - ARRIVE
+  string distance_from_airport = "5"; // DISTANCE FROM CENTRE OF RUNWAY
 
   if(Airport == "LHR"){
     if (!depart_or_arrive){ // DEPART
@@ -32,7 +32,7 @@ int main(){
       FilePath_aircraft = Airport + "/LANDING_UTM_ARRIVE_A320 LGW time - 2017-08-25 04-00 to 2017-08-25 23-45.csv";
     }
   }
-  
+
   int no_col_aircraft = 22;
   double aircraft_radius = 3.5;
 

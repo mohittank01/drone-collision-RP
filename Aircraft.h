@@ -16,6 +16,7 @@ class Aircraft{
     int groundspeed;
     int onground;
     int track;
+    int airport_dest;
 
 
     string FilePath;
