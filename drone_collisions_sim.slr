@@ -1,0 +1,11 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=20
+#SBATCH --mem-per-cpu=100MB
+#SBATCH --time=00:30:00
+#SBATCH --job-name=drone_montecarlo
+#SBATCH --partition=short
+
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+./Monte_Carlo --airport LGW --depart_arrive 0 --distance 4.0
