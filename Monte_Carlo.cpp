@@ -2,18 +2,39 @@
 #include "Drone.h"
 #include <iostream>
 #include <omp.h>
+#include <boost/program_options.hpp>
+#include <iomanip>
+#include <sstream>
 
-
+namespace po = boost::program_options;
 using namespace std;
 
-int main(){
+int main(int argc, char* argv[]){
+
+  po::options_description opts("Available options.");
+  opts.add_options()
+    ("airport", po::value<string>()->default_value("LHR"), "Airport Code.")
+    ("depart_arrive", po::value<int>()->default_value(1), "Departure or Arrival.")
+    ("distance", po::value<double>()->default_value(1.0), "Inital distance of drones from centre of airport.")
+    ("help", "Print help message.");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, opts), vm);
+  po::notify(vm);
+
+  if(vm.count("help")){
+    cout << opts << endl;
+    return 1;
+  }
+  
+  stringstream stream;
+  stream << fixed << setprecision(1) << vm["distance"].as<double>();
+
+  string Airport = vm["airport"].as<string>();
+  int depart_or_arrive = vm["depart_arrive"].as<int>();
+  string distance_from_airport = stream.str();
 
   string FilePath_aircraft;
-
-  // VARIABLES TO CHANGE 
-  string Airport = "LHR";
-  int depart_or_arrive = 0; // 0 - DEPART 1 - ARRIVE
-  string distance_from_airport = "5"; // DISTANCE FROM CENTRE OF RUNWAY
 
   if(Airport == "LHR"){
     if (!depart_or_arrive){ // DEPART

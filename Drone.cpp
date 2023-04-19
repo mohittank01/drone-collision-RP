@@ -83,6 +83,8 @@ void Drone::ClearOutput(int Aircraft_Index, string distance_from_airport, string
 
 void Drone::ClearOutput_1File(string distance_from_airport, string Airport_input, int depart_or_arrive){
     boost::filesystem::path full_path(boost::filesystem::current_path());
+    boost::filesystem::path dstFolder = Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km"; // Makes folder if there is no folder
+    boost::filesystem::create_directory(dstFolder);
     if(depart_or_arrive){// ARRIVE
         boost::filesystem::path dstFolder = Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Arrival"; // Makes folder if there is no folder
         boost::filesystem::create_directory(dstFolder);
