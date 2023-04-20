@@ -1,0 +1,6 @@
+Number of collisions: 196
+Number of collisions: 217
+Number of collisions: 223
+Number of collisions: 213
+/var/lib/slurm/slurmd/job11721/slurm_script: line 12: 19652 Killed                  ./Monte_Carlo --airport LGW --depart_arrive $(echo $DEPARTARRIVE) --distance 1.0 --total_runs 10
+slurmstepd-linux4: error: *** JOB 11721 ON linux4 CANCELLED AT 2023-04-20T18:14:24 ***

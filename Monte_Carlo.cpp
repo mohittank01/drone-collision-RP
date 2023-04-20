@@ -14,8 +14,9 @@ int main(int argc, char* argv[]){
   po::options_description opts("Available options.");
   opts.add_options()
     ("airport", po::value<string>()->default_value("LHR"), "Airport Code.")
-    ("depart_arrive", po::value<int>()->default_value(1), "Departure or Arrival.")
+    ("depart_arrive", po::value<int>()->default_value(1), "Departure (0) or Arrival (1). ")
     ("distance", po::value<double>()->default_value(1.0), "Inital distance of drones from centre of airport.")
+    ("total_runs", po::value<int>()->default_value(1), "Total run number of program.")
     ("help", "Print help message.");
 
   po::variables_map vm;
@@ -33,6 +34,7 @@ int main(int argc, char* argv[]){
   string Airport = vm["airport"].as<string>();
   int depart_or_arrive = vm["depart_arrive"].as<int>();
   string distance_from_airport = stream.str();
+  int max_run_number = vm["total_runs"].as<int>();
 
   string FilePath_aircraft;
 
@@ -53,7 +55,6 @@ int main(int argc, char* argv[]){
       FilePath_aircraft = Airport + "/LANDING_UTM_ARRIVE_A320 LGW time - 2017-08-25 04-00 to 2017-08-25 23-45.csv";
     }
   }
-
   int no_col_aircraft = 22;
   double aircraft_radius = 3.5;
 
@@ -65,27 +66,30 @@ int main(int argc, char* argv[]){
   double* total_collisions = new double[1];
   *total_collisions = 0;
 
+  double* total_sims = new double[1];
+  *total_sims = 0;
+
   Aircraft Aircraft;
   Drone Drone;
 
   Aircraft.Set_Parameters_and_Data(FilePath_aircraft, no_col_aircraft);
-  Drone.ClearOutput_1File(distance_from_airport, Airport, depart_or_arrive);
-  int i;
+  Drone.Average_ClearOutput_1File(distance_from_airport, Airport, depart_or_arrive);
 
-  #pragma omp parallel for private(i) firstprivate(Aircraft,Drone)
-  for(i=0; i < Aircraft.Aircraft_Index_size-1; ++i){
-    Aircraft.Vector_Allocation(i);
-    Drone.ClearOutput(i, distance_from_airport, Airport, depart_or_arrive);
+  for(int run_number=0; run_number < max_run_number; ++run_number){
+    int i;
     double* local_collisions = new double[1];
     *local_collisions = 0;
-    for(int j=0; j < drone_total; ++j){
-      Drone.SetInitialParameters(FilePath_drone, Airport, Aircraft.Vector_length, no_col_drone, j, i, Aircraft.takeoff_t, Aircraft.arrive_t, Aircraft.longitude_vector, Aircraft.latitude_vector, Aircraft.altitude_vector, Aircraft.track_vector, aircraft_radius, drone_radius);
-      Drone.Simulation(10000, total_collisions, local_collisions, distance_from_airport);
+    #pragma omp parallel for private(i) firstprivate(Aircraft,Drone)
+    for(i=0; i < Aircraft.Aircraft_Index_size-1; ++i){
+      Aircraft.Vector_Allocation(i);
+      for(int j=0; j < drone_total; ++j){
+        Drone.SetInitialParameters(FilePath_drone, Airport, Aircraft.Vector_length, no_col_drone, j, i, Aircraft.takeoff_t, Aircraft.arrive_t, Aircraft.longitude_vector, Aircraft.latitude_vector, Aircraft.altitude_vector, Aircraft.track_vector, Aircraft.groundspeed_vector, aircraft_radius, drone_radius);
+        Drone.Simulation(10000, total_collisions, local_collisions, distance_from_airport, run_number, total_sims);
+      }
+      Aircraft.Deallocation();
     }
-    Drone.Output_Collision_Num(local_collisions, distance_from_airport);
-    Aircraft.Deallocation();
-
+    Drone.AverageOutputFile_LocalCollision(Airport, local_collisions, distance_from_airport, run_number, depart_or_arrive);
+    cout << "Number of collisions: " << *local_collisions << endl;
   }
-  Drone.Output_1File_Collision_Num(total_collisions, distance_from_airport, Airport, depart_or_arrive);
-  cout << "Number of collisions: " << *total_collisions << endl;
+  Drone.AverageOutputFile_TotalCollision(Airport, total_collisions, distance_from_airport, total_sims, max_run_number, depart_or_arrive);
  }

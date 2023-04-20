@@ -1,0 +1,14 @@
+Number of collisions: 204
+Number of collisions: 234
+Number of collisions: 214
+Number of collisions: 215
+/var/lib/slurm/slurmd/job11735/slurm_script: line 12: 19821 Killed                  ./Monte_Carlo --airport LGW --depart_arrive 0 --distance 1.0 --total_runs 10
+Number of collisions: 182
+Number of collisions: 177
+Number of collisions: 198
+Number of collisions: 193
+Number of collisions: 182
+Number of collisions: 190
+Number of collisions: 173
+Number of collisions: 177
+/var/lib/slurm/slurmd/job11735/slurm_script: line 13: 19905 Killed                  ./Monte_Carlo --airport LGW --depart_arrive 1 --distance 1.0 --total_runs 10

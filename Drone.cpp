@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void Drone::SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, int arrive_time_input, double* air_long, double* air_lat, double* air_alt, double* air_track, double aircraft_radius_input, double drone_radius_input){
+void Drone::SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, int arrive_time_input, double* air_long, double* air_lat, double* air_alt, double* air_track, double* air_speed, double aircraft_radius_input, double drone_radius_input){
     FilePath = FilePath_input;
     VectorLength = Vector_length_input;
     TotalCols = TotalCols_input;
@@ -44,6 +44,7 @@ void Drone::SetInitialParameters(string FilePath_input, string Airport_input, in
     aircraft_longitude = new double[VectorLength];
     aircraft_latitude = new double[VectorLength];
     aircraft_altitude = new double[VectorLength];
+    aircraft_groundspeed = new double[VectorLength];
     aircraft_tracking = new double[1];
 
     aircraft_tracking[0] = air_track[0];
@@ -52,6 +53,7 @@ void Drone::SetInitialParameters(string FilePath_input, string Airport_input, in
         aircraft_longitude[i] = air_long[i];
         aircraft_latitude[i] = air_lat[i];
         aircraft_altitude[i] = air_alt[i];
+        aircraft_groundspeed[i] = air_speed[i];
     }
 
     if(aircraft_altitude[0] != 0){
@@ -90,7 +92,7 @@ void Drone::ClearOutput_1File(string distance_from_airport, string Airport_input
         boost::filesystem::create_directory(dstFolder);
         ofstream outfile;
         outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Arrival/All_Drone_Collisions.csv", ofstream::out | ofstream::trunc);
-        outfile.close();
+        outfile.close();        
     }
     else{ // DEPART
         boost::filesystem::path dstFolder = Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Depart"; // Makes folder if there is no folder
@@ -99,6 +101,33 @@ void Drone::ClearOutput_1File(string distance_from_airport, string Airport_input
         outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Depart/All_Drone_Collisions.csv", ofstream::out | ofstream::trunc);
         outfile.close();
     }
+}
+
+void Drone::Average_ClearOutput_1File(string distance_from_airport, string Airport_input, int depart_or_arrive){
+    boost::filesystem::path full_path(boost::filesystem::current_path());
+    boost::filesystem::path dstFolder = Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km"; // Makes folder if there is no folder
+    boost::filesystem::create_directory(dstFolder);
+
+    ofstream outfile;
+
+    if(depart_or_arrive){// ARRIVE
+        boost::filesystem::path dstFolder = Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Arrival"; // Makes folder if there is no folder
+        boost::filesystem::create_directory(dstFolder);
+        boost::filesystem::path ndstFolder = Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Arrival/Batch_Testing"; // Makes folder if there is no folder
+        boost::filesystem::create_directory(ndstFolder);
+        outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Arrival/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::trunc);
+    }
+
+    else{ // DEPART
+        boost::filesystem::path dstFolder = Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Depart"; // Makes folder if there is no folder
+        boost::filesystem::create_directory(dstFolder);
+        boost::filesystem::path ndstFolder = Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Depart/Batch_Testing"; // Makes folder if there is no folder
+        boost::filesystem::create_directory(ndstFolder);
+        outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Depart/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::trunc);
+    }
+
+    outfile << "run_number,longitude,latitude,altitude,drone_speed,aircraft_index,aircraft_speed,time" << '\n';
+    outfile.close();
 }
 
 
@@ -478,6 +507,52 @@ void Drone::Output_1File_Collision_Num(double* total_collisions, string distance
     outfile1.close();
 }
 
+void Drone::AverageOutputFile(string distance_from_airport, int run_number){
+    ofstream outfile;
+    if(depart_or_arrive){ // ARRIVE
+        outfile.open(Airport + "/Drone_Collisions_" + distance_from_airport + "_km/Arrival/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::app);
+    }
+    else{ // DEPART
+        outfile.open(Airport + "/Drone_Collisions_" + distance_from_airport + "_km/Depart/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::app);
+    }
+    
+    outfile.precision(10);
+    outfile << run_number << "," << longitude_vector[*collision_index] << "," << latitude_vector[*collision_index] << "," << altitude_vector[*collision_index] << "," << speed_vector[*collision_index] << "," << AircraftIndex << "," << aircraft_groundspeed[*collision_index] << "," << *collision_index << '\n';    
+    outfile.close();
+}
+
+void Drone::AverageOutputFile_LocalCollision(string Airport_input, double* local_collisions, string distance_from_airport, int run_number, int depart_or_arrive){
+    ofstream outfile;
+    if(depart_or_arrive){ // ARRIVE
+        outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Arrival/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::app);
+    }
+    else{ // DEPART
+        outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Depart/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::app);
+    }
+    
+    outfile << run_number << ",Local Collision Number," << *local_collisions << '\n';
+    outfile << '\n';
+    outfile.close();
+}
+
+void Drone::AverageOutputFile_TotalCollision(string Airport_input, double* total_collisions, string distance_from_airport, double* total_sims, int max_run_number, int depart_or_arrive){
+    ofstream outfile;
+    if(depart_or_arrive){ // ARRIVE
+        outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Arrival/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::app);
+    }
+    else{ // DEPART
+        outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/Depart/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::app);
+    }
+    
+    outfile << "Total Collision Number," << *total_collisions << '\n';
+    outfile << "Total simulation runs," << *total_sims << '\n';
+    outfile << "Total Monte-Carlo runs," << max_run_number << '\n';
+    outfile.precision(10);
+    outfile << "Average number of Collisions per Monte-Carlo run," << *total_collisions/(max_run_number*1.0) << '\n';
+    outfile << "Average percentage of collision," << *total_collisions / *total_sims; 
+    outfile.close();
+}
+
 void Drone::Deallocate(){
     delete[] longitude_vector;
     delete[] latitude_vector;
@@ -504,16 +579,17 @@ bool Drone::Collision(){
 
 
 
-void Drone::Simulation(int number_runs, double* total_collisions, double* local_collisions, string distance_from_airport){
+void Drone::Simulation(int number_sims, double* total_collisions, double* local_collisions, string distance_from_airport, int run_number, double* total_sims){
     SetInitialConditions();
-    for(int i = 0; i < number_runs; ++i){
+    for(int i = 0; i < number_sims; ++i){
+        *total_sims += 1;
         FirstStage();   // Drone heads towards centre of runway
         SecondStage();  // Drone heads towards random coords in volume
         if (Collision()){
-            Output(i, distance_from_airport);   // Outputs to csv file for each aircraft index
-            Output_1File(i, distance_from_airport); // Outputs to A SINGLE csv file for all collisions 
+            AverageOutputFile(distance_from_airport, run_number);
             *local_collisions += 1;
             *total_collisions += 1;
+            break;
         }
     }
     Deallocate();
