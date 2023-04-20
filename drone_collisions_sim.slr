@@ -8,4 +8,4 @@
 #SBATCH --partition=short
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-./Monte_Carlo --airport LGW --depart_arrive 0 --distance 4.0
+./Monte_Carlo --airport LGW --depart_arrive 0 --distance 3.0
