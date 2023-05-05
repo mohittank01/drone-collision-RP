@@ -139,6 +139,11 @@ void Drone::SetInitialConditions(){
     speed_vector = new double[VectorLength];
     heading_vector = new double[VectorLength];
 
+    point1_LGW = new double[2];
+    point2_LGW = new double[2];
+    point3_LGW = new double[2];
+    point4_LGW = new double[2];
+
     // Initialise vectors
     longitude_vector[0] = *initial_long_pos; // Initialising longitude
     latitude_vector[0] = *initial_lat_pos; // Initialising latitude
@@ -246,11 +251,6 @@ void Drone::CubedVolume(){
     }
 
     if(Airport == "LGW"){
-        point1_LGW = new double[2];
-        point2_LGW = new double[2];
-        point3_LGW = new double[2];
-        point4_LGW = new double[2];
-        
         if(depart_or_arrive){ // ARRIVE
             min_cube_alt = 50; // 50m
             max_cube_alt = 300; // 300m
@@ -560,6 +560,10 @@ void Drone::Deallocate(){
     delete[] speed_vector;
     delete[] heading_vector;
     delete[] collision_index;
+    delete[] point1_LGW;
+    delete[] point2_LGW;
+    delete[] point3_LGW;
+    delete[] point4_LGW;
 }
 
 bool Drone::Collision(){
@@ -589,7 +593,6 @@ void Drone::Simulation(int number_sims, double* total_collisions, double* local_
             AverageOutputFile(distance_from_airport, run_number);
             *local_collisions += 1;
             *total_collisions += 1;
-            break;
         }
     }
     Deallocate();

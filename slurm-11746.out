@@ -1,0 +1,6 @@
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('{1.5..3.0..0.5}') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11746/slurm_script: line 12: 486271 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 0 --distance $(echo $DISTANCE) --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('{1.5..3.0..0.5}') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11746/slurm_script: line 12: 486273 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 1 --distance $(echo $DISTANCE) --total_runs 10

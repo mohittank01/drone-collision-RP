@@ -1,0 +1,48 @@
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501004 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 0 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501005 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 1 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501006 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 0 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501007 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 1 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501008 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 0 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501009 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 1 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501010 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 0 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501011 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 1 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501012 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 0 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501013 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 1 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501014 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 0 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501015 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 1 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501016 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 0 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501017 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 1 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501018 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 0 --distance echo $DISTANCE --total_runs 10
+terminate called after throwing an instance of 'boost::wrapexcept<boost::program_options::invalid_option_value>'
+  what():  the argument ('echo') for option '--distance' is invalid
+/var/lib/slurm/slurmd/job11771/slurm_script: line 12: 501019 Aborted                 ./Monte_Carlo --airport LHR --depart_arrive 1 --distance echo $DISTANCE --total_runs 10
