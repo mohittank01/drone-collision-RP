@@ -13,6 +13,7 @@ class Drone{
 
     int VectorLength;
     int DroneIndex;
+    string DroneModel;
     int AircraftIndex;
     int TakeoffTime;
     int ArriveTime;
@@ -27,7 +28,6 @@ class Drone{
     int PositionData_size;
     int TotalCols;
     vector<string> PositionData;
-    string FilePath;
     string Airport;
 
     double* initial_long_pos;
@@ -37,7 +37,6 @@ class Drone{
     int* longitude_factor_1st;
     int* latitude_factor_1st;
 
-    void CSVData();
     void ColumnSelect_Index(int column_no, double* column_pointer, int DroneIndex);
     void SetInitialConditions();
     void FirstStage();
@@ -94,16 +93,17 @@ class Drone{
 
     public:
 
-    void SetInitialParameters(string FilePath_input, string Airport_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, int arrive_time_input, double* air_long, double* air_lat, double* air_alt, double* air_track, double* air_speed, double aircraft_radius_input, double drone_radius_input);
+    void CSVData(string FilePath);
+    void SetInitialParameters(string Airport_input, string DroneModel_input, int Vector_length_input, int TotalCols_input, int drone_index_input, int aircraft_index_input, int takeoff_time_input, int arrive_time_input, double* air_long, double* air_lat, double* air_alt, double* air_track, double* air_speed, double aircraft_radius_input);
     void Simulation(int number_sims, double* total_collisions, double* local_collisions, string distance_from_airport, int run_number, double* total_sims);
     void Output_Collision_Num(double* local_collisions, string distance_from_airport);
     void ClearOutput(int Aircraft_Index, string distance_from_airport, string Airport_input, int depart_or_arrive);
     void ClearOutput_1File(string distance_from_airport, string Airport_input, int depart_or_arrive);
     void Output_1File_Collision_Num(double* total_collisions, string distance_from_airport, string Airport_input, int depart_or_arrive);
-    void Average_ClearOutput_1File(string distance_from_airport, string Airport_input, int depart_or_arrive);
+    void Average_ClearOutput_1File(string distance_from_airport, string Airport_input, string drone_model_input, int depart_or_arrive);
     void AverageOutputFile(string distance_from_airport, int run_number);
-    void AverageOutputFile_LocalCollision(string Airport_input, double* local_collisions, string distance_from_airport, int run_number, int depart_or_arrive);
-    void AverageOutputFile_TotalCollision(string Airport_input, double* total_collisions, string distance_from_airport, double* total_sims, int max_run_number, int depart_or_arrive);
+    void AverageOutputFile_LocalCollision(string Airport_input, string drone_model_input, double* local_collisions, string distance_from_airport, int run_number, int depart_or_arrive);
+    void AverageOutputFile_TotalCollision(string Airport_input, string drone_model_input,  double* total_collisions, string distance_from_airport, double* total_sims, int max_run_number, int depart_or_arrive);
 
 
 };

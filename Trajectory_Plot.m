@@ -26,7 +26,6 @@ for i = 2:length(callsign)+1
     if callsign(i) ~= callsign(i+1)
         aircraft_index(end+1) = i+1;
     end
-    
 end
 
 index_select = 1;
