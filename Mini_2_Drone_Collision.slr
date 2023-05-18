@@ -2,15 +2,15 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=30
-#SBATCH --mem=20000MB
-#SBATCH --time=1-00:00:00
-#SBATCH --job-name=mini_2_LHR
+#SBATCH --mem=15000MB
+#SBATCH --time=6:00:00
+#SBATCH --job-name=mini_2_LHR_3
 #SBATCH --partition=medium
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 
-for DISTANCE in $(seq 1.0 0.5 5.0)
+for DISTANCE in $(seq 4.0 0.5 4.0)
 do
     ./Monte_Carlo --airport LHR --drone_model Mini_2 --depart_arrive 0 --distance $(echo $DISTANCE) --total_runs 10
     ./Monte_Carlo --airport LHR --drone_model Mini_2 --depart_arrive 1 --distance $(echo $DISTANCE) --total_runs 10

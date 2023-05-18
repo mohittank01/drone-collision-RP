@@ -1,0 +1,29 @@
+run_number,longitude,latitude,altitude,drone_speed,drone_index,aircraft_index,aircraft_speed,time
+0,Local Collision Number,0
+
+1,Local Collision Number,0
+
+2,Local Collision Number,0
+
+3,692793.1593,5669098.706,213.6686226,14.44826025,69,27,71.507716,19
+3,Local Collision Number,1
+
+4,Local Collision Number,0
+
+5,Local Collision Number,0
+
+6,692797.8943,5669099.1,220.2898837,15.43813842,69,27,71.507716,19
+6,Local Collision Number,1
+
+7,Local Collision Number,0
+
+8,Local Collision Number,0
+
+9,692810.7082,5669084.936,190.1213741,11.02986449,69,29,74.079936,22
+9,Local Collision Number,1
+
+Total Collision Number,3
+Total simulation runs,3.92302e+08
+Total Monte-Carlo runs,10
+Average number of Collisions per Monte-Carlo run,0.3
+Average percentage of collision,7.647167482e-09

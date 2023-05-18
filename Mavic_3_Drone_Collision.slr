@@ -1,16 +1,16 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=20
+#SBATCH --cpus-per-task=30
 #SBATCH --mem=15000MB
-#SBATCH --time=1-00:00:00
-#SBATCH --job-name=mavic_3_drone_LGW
+#SBATCH --time=12:00:00
+#SBATCH --job-name=mavic_3_drone_LHR_2
 #SBATCH --partition=medium
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-s
-for DISTANCE in $(seq 1.0 0.5 5.0)
+
+for DISTANCE in $(seq 4.5 0.5 5.0)
 do
-    ./Monte_Carlo --airport LGW --drone_model Mavic_3 --depart_arrive 0 --distance $(echo $DISTANCE) --total_runs 10
-    ./Monte_Carlo --airport LGW --drone_model Mavic_3 --depart_arrive 1 --distance $(echo $DISTANCE) --total_runs 10
+    ./Monte_Carlo --airport LHR --drone_model Mavic_3 --depart_arrive 0 --distance $(echo $DISTANCE) --total_runs 10
+    ./Monte_Carlo --airport LHR --drone_model Mavic_3 --depart_arrive 1 --distance $(echo $DISTANCE) --total_runs 10
 done
