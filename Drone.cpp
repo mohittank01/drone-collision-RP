@@ -567,7 +567,7 @@ void Drone::AverageOutputFile_TotalCollision(string Airport_input, string drone_
     outfile << "Total Monte-Carlo runs," << max_run_number << '\n';
     outfile.precision(10);
     outfile << "Average number of Collisions per Monte-Carlo run," << *total_collisions/(max_run_number*1.0) << '\n';
-    outfile << "Average percentage of collision," << *total_collisions / *total_sims; 
+    outfile << "Average percentage of collision," << (*total_collisions / *total_sims)*100.0; 
     outfile.close();
 }
 
