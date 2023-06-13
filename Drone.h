@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <chrono>
 #include "omp.h"
 
 
@@ -43,6 +44,7 @@ class Drone{
     void CubedVolume();
     void SecondStage();
     bool Collision();
+    void EstimateCollisionPoint(int i);
     void Output(int run_no, string distance_from_airport);
     void Output_1File(int run_no, string distance_from_airport);
     void Deallocate();
@@ -89,6 +91,8 @@ class Drone{
     double* altitude_vector;
     double* speed_vector;
     double* heading_vector;
+    double* pitch_vector;
+    double* collision_point;
 
 
     public:
@@ -103,9 +107,9 @@ class Drone{
     void Average_ClearOutput_1File(string distance_from_airport, string Airport_input, string drone_model_input, int depart_or_arrive);
     void AverageOutputFile(string distance_from_airport, int run_number);
     void AverageOutputFile_LocalCollision(string Airport_input, string drone_model_input, double* local_collisions, string distance_from_airport, int run_number, int depart_or_arrive);
-    void AverageOutputFile_TotalCollision(string Airport_input, string drone_model_input,  double* total_collisions, string distance_from_airport, double* total_sims, int max_run_number, int depart_or_arrive);
+    void AverageOutputFile_TotalCollision(string Airport_input, string drone_model_input,  double* total_collisions, string distance_from_airport, double* total_sims, int max_run_number, int depart_or_arrive, chrono::seconds duration);
 
-
+    
 };
 
 #endif

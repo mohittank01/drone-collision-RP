@@ -6,6 +6,7 @@
 #include <random>
 #include <cmath>
 #include <omp.h>
+#include <chrono>
 #include <boost/filesystem.hpp>
 
 using namespace std;
@@ -168,7 +169,7 @@ void Drone::Average_ClearOutput_1File(string distance_from_airport, string Airpo
         outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/" + drone_model_input + "/Depart/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::trunc);
     }
 
-    outfile << "run_number,longitude,latitude,altitude,drone_speed,drone_index,aircraft_index,aircraft_speed,time" << '\n';
+    outfile << "run_number,longitude,latitude,altitude,drone_speed,drone_index,aircraft_index,aircraft_speed,collision_x,collision_y,collision_z,time" << '\n';
     outfile.close();
 }
 
@@ -180,11 +181,14 @@ void Drone::SetInitialConditions(){
     altitude_vector = new double[VectorLength];
     speed_vector = new double[VectorLength];
     heading_vector = new double[VectorLength];
+    pitch_vector = new double[VectorLength];
 
     point1_LGW = new double[2];
     point2_LGW = new double[2];
     point3_LGW = new double[2];
     point4_LGW = new double[2];
+
+    collision_point = new double[3];
 
     // Initialise vectors
     longitude_vector[0] = *initial_long_pos; // Initialising longitude
@@ -192,6 +196,7 @@ void Drone::SetInitialConditions(){
     heading_vector[0] = *initial_heading; // Initialising heading
     altitude_vector[0] = start_alt; // 100m starting altitude
     speed_vector[0] = max_straight_speed; // 19m/s max strightline speed
+    pitch_vector[0] = 0.0;
 }
 
 
@@ -222,6 +227,7 @@ void Drone::FirstStage(){
         heading_vector[i] = heading_vector[i-1];
         speed_vector[i] = max_straight_speed;
         altitude_vector[i] = start_alt;
+        pitch_vector[i] = 0.0;
     }
 }
 
@@ -450,6 +456,7 @@ void Drone::SecondStage(){
         altitude_vector[i] = altitude_vector[i-1] + sin(pitch_angle) * velocity_factor;
         speed_vector[i] = velocity_factor;
         heading_vector[i] = heading_angle;
+        pitch_vector[i] = pitch_angle;
     }
 }
 
@@ -535,7 +542,7 @@ void Drone::AverageOutputFile(string distance_from_airport, int run_number){
     }
     
     outfile.precision(10);
-    outfile << run_number << "," << longitude_vector[*collision_index] << "," << latitude_vector[*collision_index] << "," << altitude_vector[*collision_index] << "," << speed_vector[*collision_index] << "," << DroneIndex << "," << AircraftIndex << "," << aircraft_groundspeed[*collision_index] << "," << *collision_index << '\n';    
+    outfile << run_number << "," << longitude_vector[*collision_index] << "," << latitude_vector[*collision_index] << "," << altitude_vector[*collision_index] << "," << speed_vector[*collision_index] << "," << DroneIndex << "," << AircraftIndex << "," << aircraft_groundspeed[*collision_index] << "," << collision_point[0] << "," << collision_point[1] << "," << collision_point[2] << "," << *collision_index << '\n';    
     outfile.close();
 }
 
@@ -553,7 +560,7 @@ void Drone::AverageOutputFile_LocalCollision(string Airport_input, string drone_
     outfile.close();
 }
 
-void Drone::AverageOutputFile_TotalCollision(string Airport_input, string drone_model_input, double* total_collisions, string distance_from_airport, double* total_sims, int max_run_number, int depart_or_arrive){
+void Drone::AverageOutputFile_TotalCollision(string Airport_input, string drone_model_input, double* total_collisions, string distance_from_airport, double* total_sims, int max_run_number, int depart_or_arrive, chrono::seconds duration){
     ofstream outfile;
     if(depart_or_arrive){ // ARRIVE
         outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/" + drone_model_input + "/Arrival/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::app);
@@ -562,6 +569,7 @@ void Drone::AverageOutputFile_TotalCollision(string Airport_input, string drone_
         outfile.open(Airport_input + "/Drone_Collisions_" + distance_from_airport + "_km/" + drone_model_input + "/Depart/Batch_Testing/Average_Collisions.csv", ofstream::out | ofstream::app);
     }
     
+    outfile << "Total time duration in seconds," << duration.count() << '\n';
     outfile << "Total Collision Number," << *total_collisions << '\n';
     outfile << "Total simulation runs," << *total_sims << '\n';
     outfile << "Total Monte-Carlo runs," << max_run_number << '\n';
@@ -577,11 +585,13 @@ void Drone::Deallocate(){
     delete[] altitude_vector;
     delete[] speed_vector;
     delete[] heading_vector;
+    delete[] pitch_vector;
     delete[] collision_index;
     delete[] point1_LGW;
     delete[] point2_LGW;
     delete[] point3_LGW;
     delete[] point4_LGW;
+    delete[] collision_point;
 }
 
 bool Drone::Collision(){
@@ -593,6 +603,7 @@ bool Drone::Collision(){
         );
         if (distance < (DroneRadius + AircraftRadius)){
             *collision_index = i;
+            EstimateCollisionPoint(i);
             return 1;
         }
     }
@@ -614,5 +625,32 @@ void Drone::Simulation(int number_sims, double* total_collisions, double* local_
         }
     }
     Deallocate();
+
+}
+
+void Drone::EstimateCollisionPoint(int i){
+    // Direction Vector
+    double direction_x = -sin(heading_vector[i]) * cos(pitch_vector[i]);
+    double direction_y = cos(heading_vector[i]) * cos(pitch_vector[i]);
+    double direction_z = sin(pitch_vector[i]);
+
+    // Normalise Direction Vector
+    double magnitude = sqrt(direction_x * direction_x + direction_y * direction_y + direction_z * direction_z);
+    double normal_direction_x = direction_x / magnitude;
+    double normal_direction_y = direction_y / magnitude;
+    double normal_direction_z = direction_z / magnitude;
+
+    // Displacement Vector
+    double displacement_x = normal_direction_x * (DroneRadius + AircraftRadius);
+    double displacement_y = normal_direction_y * (DroneRadius + AircraftRadius);
+    double displacement_z = normal_direction_z * (DroneRadius + AircraftRadius);
+
+    // Magnititude of displacement vector
+    double magnitude_disp = sqrt(displacement_x * displacement_x + displacement_y * displacement_y + displacement_z * displacement_z);
+    
+    // Coliision point on the surface of aircraft sphere
+    collision_point[0] = (displacement_x/magnitude_disp) * AircraftRadius;
+    collision_point[1] = (displacement_y/magnitude_disp) * AircraftRadius;
+    collision_point[2] = (displacement_z/magnitude_disp) * AircraftRadius;
 
 }

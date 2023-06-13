@@ -1,7 +1,7 @@
 CC       = g++
 CXX      = g++
-CXXFLAGS = -g -Wall -O3 -ftree-vectorize
-LDLIBS   = -fopenmp -lboost_program_options -lboost_iostreams -lboost_filesystem -lboost_system
+CXXFLAGS = -g -Wall -O3 -ftree-vectorize -fconcepts-ts
+LDLIBS   = -lstdc++ -fopenmp -lboost_program_options -lboost_iostreams -lboost_filesystem -lboost_system -lgfortran
 TARGET   = Monte_Carlo
 
 

@@ -5,20 +5,33 @@ import pandas as pd
 import pyproj
 import math
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.collections import LineCollection, PolyCollection
 from cartes.crs import OSGB
 import cartopy.feature
 from cartopy.mpl.patch import geos_to_path
 import cartopy.crs as ccrs
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.ticker as ticker
 from collections import Counter
 import itertools
 from scipy.interpolate import UnivariateSpline
+from scipy.stats import norm
 from traffic.data import airports
+from traffic.drawing import TransverseMercator, countries, lakes, ocean, rivers
+from matplotlib.ticker import FormatStrFormatter
 from scipy import interpolate
 import os
 
 plt.close('all')
+mpl.rcParams['axes.labelsize'] = 16
+mpl.rcParams['legend.fontsize'] = 12
+mpl.rcParams['xtick.labelsize'] = 15
+mpl.rcParams['ytick.labelsize'] = 15
+mpl.rcParams['axes.labelsize'] = 15
+mpl.rcParams['legend.title_fontsize'] = 13
+mpl.rcParams['font.family'] = 'serif'
+
 
 
 def boundary(coords, distance):
@@ -47,7 +60,7 @@ def data_access(airport,distance_from_airport,drone_model,depart_arrive,anomaly_
     drone_pos_lat = list(drone_pos['latitude'])
     drone_pos['longitude'], drone_pos['latitude'] = p(drone_pos_long, drone_pos_lat, inverse=True)
 
-    sim_index = [None] * total_MC_runs
+    sim_index = [None] * (total_MC_runs)
 
     idx = 0
 
@@ -61,7 +74,7 @@ def data_access(airport,distance_from_airport,drone_model,depart_arrive,anomaly_
 
     # Dropping data which has the text in them
     drone_data.drop(drone_data.index[sim_index], inplace=True)
-    drone_data.drop(drone_data.index[[-1, -2, -3, -4, -5]], inplace=True)
+    drone_data.drop(drone_data.index[[-1, -2, -3, -4, -5, -6]], inplace=True)
     drone_data.reset_index(drop=True, inplace=True)
 
     if anomaly_detect == 1 and total_collisions > 0:
@@ -149,13 +162,16 @@ def distance_comparison(airport,drone_model,depart_arrive,anomaly_detect=0):
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
     title = 'Areas of where Colliding Drones come from ' + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title('Areas of where Colliding Drones come from\n' + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect))
+    #plt.title('Areas of where Colliding Drones come from\n' + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect))
     ax.set_extent((bounds[0], bounds[2], bounds[1], bounds[3]))
-    legend = plt.legend(title='Distance from Airport Center - km',fontsize=15, loc='lower center',ncol=3)
-    legend.get_title().set_fontsize('16')
+    legend = plt.legend(title='Distance from Airport Center - km',fontsize=20, loc='lower center',ncol=3)
+    legend.get_title().set_fontsize('21')
     ax.title.set_fontsize(20)
+    plt.tight_layout()
     plt.savefig("Plots/" + airport + "/" + drone_model + "/" + str(anomaly_detect) + "/" + title + ".png", dpi=300, bbox_inches='tight')
     plt.show()
+
+
 
     # Plotting Groundspeed comparision
     plt.figure()
@@ -167,14 +183,201 @@ def distance_comparison(airport,drone_model,depart_arrive,anomaly_detect=0):
         plt.plot(drone_data['drone_speed'].iloc[0:sim_index[0]], drone_data['aircraft_speed'].iloc[0:sim_index[0]], 'x',
                  label=distance)
 
+
+
     title = "Aircraft Groundspeed vs Drone Groundspeed " + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Aircraft Groundspeed vs Drone Groundspeed\n" + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect))
+    #plt.title("Aircraft Groundspeed vs Drone Groundspeed\n" + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone Groundspeed / m/s")
     plt.ylabel("Aircraft Groundspeed / m/s")
     plt.legend(title='Distance from\nAirport Center - km',bbox_to_anchor=(1.01, 1), loc="upper left")
     plt.tight_layout()
     plt.savefig("Plots/" + airport + "/" + drone_model + "/" + str(anomaly_detect) + "/" + title + ".png", dpi=300, bbox_inches='tight')
     plt.show()
+
+
+def normal_distribution(drone_model,anomaly_detect=0):
+    # Need to make a list for normal distribution plot
+    distance_from_airport = np.arange(1.0, 3.0, 0.5).tolist()
+    normal_dist_d_LHR = pd.DataFrame(columns=['aircraft_speed','drone_speed'])
+    normal_dist_a_LHR = pd.DataFrame(columns=['aircraft_speed','drone_speed'])
+    normal_dist_d_LGW = pd.DataFrame(columns=['aircraft_speed', 'drone_speed'])
+    normal_dist_a_LGW = pd.DataFrame(columns=['aircraft_speed', 'drone_speed'])
+    for i in range(0, len(distance_from_airport)):
+        distance = str(distance_from_airport[i])
+        _, _, _, drone_data_d_LHR, _, sim_index,_ = data_access("LHR",distance,drone_model,"Depart",anomaly_detect)
+        _, _, _, drone_data_a_LHR, _, sim_index,_ = data_access("LHR",distance,drone_model,"Arrival",anomaly_detect)
+        _, _, _, drone_data_d_LGW, _, sim_index,_ = data_access("LGW",distance,drone_model,"Depart",anomaly_detect)
+        _, _, _, drone_data_a_LGW, _, sim_index,_ = data_access("LGW",distance,drone_model,"Arrival",anomaly_detect)
+
+        normal_dist_d_LHR = pd.concat([normal_dist_d_LHR, drone_data_d_LHR[['aircraft_speed', 'drone_speed']]*1.94384], axis=0,
+                                  ignore_index=True)
+        normal_dist_a_LHR = pd.concat([normal_dist_a_LHR, drone_data_a_LHR[['aircraft_speed','drone_speed']]*1.94384], axis=0, ignore_index=True)
+        normal_dist_d_LGW = pd.concat([normal_dist_d_LGW, drone_data_d_LGW[['aircraft_speed', 'drone_speed']]*1.94384], axis=0,
+                                  ignore_index=True)
+        normal_dist_a_LGW = pd.concat([normal_dist_a_LGW, drone_data_a_LGW[['aircraft_speed','drone_speed']]*1.94384], axis=0, ignore_index=True)
+
+        # AIRCRAFT
+    mean_aircraft_speed_d_LHR = normal_dist_d_LHR['aircraft_speed'].mean()
+    std_aircraft_speed_d_LHR = normal_dist_d_LHR['aircraft_speed'].std()
+    mean_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].mean()
+    std_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].std()
+
+    mean_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].mean()
+    std_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].std()
+    mean_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].mean()
+    std_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].std()
+
+
+    # DRONE
+    mean_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].mean()
+    std_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].std()
+    mean_drone_speed_a_LHR = normal_dist_a_LHR['drone_speed'].mean()
+    std_drone_speed_a_LHR = normal_dist_a_LHR['drone_speed'].std()
+
+    mean_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].mean()
+    std_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].std()
+    mean_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].mean()
+    std_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].std()
+
+    quartile_d_LHR = pd.DataFrame(columns=['Q2', 'Q3', 'Q95', 'Q99'])
+
+    # AIRCRAFT
+    quartile_d_LHR['Q2'] = normal_dist_d_LHR['aircraft_speed'].quantile(0.5)
+    quartile_d_LHR['Q3'] = normal_dist_d_LHR['aircraft_speed'].quantile(0.75)
+    quartile_d_LHR['Q95'] = normal_dist_d_LHR['aircraft_speed'].quantile(0.95)
+    quartile_d_LHR['Q99'] = normal_dist_d_LHR['aircraft_speed'].quantile(0.99)
+    q2_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].quantile(0.5)
+    q3_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].quantile(0.75)
+    q95_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].quantile(0.95)
+    q99_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].quantile(0.99)
+
+    q2_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].quantile(0.5)
+    q3_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].quantile(0.75)
+    q95_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].quantile(0.95)
+    q99_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].quantile(0.99)
+    q2_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].quantile(0.5)
+    q3_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].quantile(0.75)
+    q95_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].quantile(0.95)
+    q99_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].quantile(0.99)
+
+    # DRONE
+    q2_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].quantile(0.5)
+    q3_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].quantile(0.75)
+    q95_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].quantile(0.95)
+    q99_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].quantile(0.99)
+    q2_drone_speed_a_LHR = normal_dist_a_LHR['drone_speed'].quantile(0.5)
+    q3_drone_speed_a_LHR = normal_dist_a_LHR['drone_speed'].quantile(0.75)
+    q95_drone_speed_a_LHR = normal_dist_a_LHR['drone_speed'].quantile(0.95)
+    q99_drone_speed_a_LHR= normal_dist_a_LHR['drone_speed'].quantile(0.99)
+
+    q2_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].quantile(0.5)
+    q3_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].quantile(0.75)
+    q95_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].quantile(0.95)
+    q99_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].quantile(0.99)
+    q2_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].quantile(0.5)
+    q3_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].quantile(0.75)
+    q95_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].quantile(0.95)
+    q99_drone_speed_a_LGW= normal_dist_a_LGW['drone_speed'].quantile(0.99)
+
+
+
+    # AIRCRAFT
+    aircraft_speed_discritised_d_LHR = np.linspace(mean_aircraft_speed_d_LHR - 3 * std_aircraft_speed_d_LHR,
+                                                   mean_aircraft_speed_d_LHR + 3 * std_aircraft_speed_d_LHR, 1000)
+    aircraft_speed_discritised_a_LHR = np.linspace(mean_aircraft_speed_a_LHR - 3 * std_aircraft_speed_a_LHR,
+                                                   mean_aircraft_speed_a_LHR + 3 * std_aircraft_speed_a_LHR, 1000)
+    aircraft_speed_discritised_d_LGW = np.linspace(mean_aircraft_speed_d_LGW - 3 * std_aircraft_speed_d_LGW,
+                         mean_aircraft_speed_d_LGW + 3 * std_aircraft_speed_d_LGW, 1000)
+    aircraft_speed_discritised_a_LGW = np.linspace(mean_aircraft_speed_a_LGW - 3 * std_aircraft_speed_a_LGW,
+                         mean_aircraft_speed_a_LGW + 3 * std_aircraft_speed_a_LGW, 1000)
+
+    # DRONE
+    drone_speed_discritised_d_LHR = np.linspace(mean_drone_speed_d_LHR - 3 * std_drone_speed_d_LHR,
+                                                mean_drone_speed_d_LHR + 3 * std_drone_speed_d_LHR, 1000)
+    drone_speed_discritised_a_LHR = np.linspace(mean_drone_speed_a_LHR - 3 * std_drone_speed_a_LHR,
+                                                mean_drone_speed_a_LHR + 3 * std_drone_speed_a_LHR, 1000)
+    drone_speed_discritised_d_LGW = np.linspace(mean_drone_speed_d_LGW - 3 * std_drone_speed_d_LGW,
+                         mean_drone_speed_d_LGW + 3 * std_drone_speed_d_LGW, 1000)
+    drone_speed_discritised_a_LGW = np.linspace(mean_drone_speed_a_LGW - 3 * std_drone_speed_a_LGW,
+                         mean_drone_speed_a_LGW + 3 * std_drone_speed_a_LGW, 1000)
+
+    # Calculating the probability density function (PDF)
+    pdf_aircraft_speed_d_LHR = norm.pdf(aircraft_speed_discritised_d_LHR, mean_aircraft_speed_d_LHR,
+                                        std_aircraft_speed_d_LHR)
+    pdf_aircraft_speed_a_LHR = norm.pdf(aircraft_speed_discritised_a_LHR, mean_aircraft_speed_a_LHR,
+                                        std_aircraft_speed_a_LHR)
+    pdf_aircraft_speed_d_LGW = norm.pdf(aircraft_speed_discritised_d_LGW, mean_aircraft_speed_d_LGW,
+                                        std_aircraft_speed_d_LGW)
+    pdf_aircraft_speed_a_LGW = norm.pdf(aircraft_speed_discritised_a_LGW, mean_aircraft_speed_a_LGW,
+                                        std_aircraft_speed_a_LGW)
+
+    pdf_drone_speed_d_LHR = norm.pdf(drone_speed_discritised_d_LHR, mean_drone_speed_d_LHR, std_drone_speed_d_LHR)
+    pdf_drone_speed_a_LHR = norm.pdf(drone_speed_discritised_a_LHR, mean_drone_speed_a_LHR, std_drone_speed_a_LHR)
+    pdf_drone_speed_d_LGW = norm.pdf(drone_speed_discritised_d_LGW, mean_drone_speed_d_LGW, std_drone_speed_d_LGW)
+    pdf_drone_speed_a_LGW = norm.pdf(drone_speed_discritised_a_LGW, mean_drone_speed_a_LGW, std_drone_speed_a_LGW)
+
+
+    #normal_dist_d_LHR.sort_values('aircraft_speed',inplace=True)
+    #normal_dist_a_LHR.sort_values('aircraft_speed',inplace=True)
+
+    #normal_dist_d_LHR.sort_values('drone_speed',inplace=True)
+    #normal_dist_a_LHR.sort_values('drone_speed',inplace=True)
+
+    plt.figure()
+    plt.plot(aircraft_speed_discritised_d_LHR, pdf_aircraft_speed_d_LHR,'-b',label='Depart - LHR')
+    plt.plot(aircraft_speed_discritised_a_LHR, pdf_aircraft_speed_a_LHR,'--b',label='Arrival - LHR')
+    plt.plot(aircraft_speed_discritised_d_LGW, pdf_aircraft_speed_d_LGW,'-r',label='Depart - LGW')
+    plt.plot(aircraft_speed_discritised_a_LGW, pdf_aircraft_speed_a_LGW,'--r',label='Arrival - LGW')
+    plt.xlabel('Aircraft Groundspeed / knots')
+    plt.ylabel('Probability Density')
+    """
+    plt.axvline(q2_aircraft_speed, color='r', linestyle='--', label='Q2')
+    plt.axvline(q3_aircraft_speed, color='b', linestyle='--', label='Q3')
+    plt.axvline(q95_aircraft_speed, color='m', linestyle='--', label='Q95')
+    plt.axvline(q99_aircraft_speed, color='y', linestyle='--', label='Q99')
+    """
+    plt.legend()
+    plt.tight_layout()
+    title = "Normal Distribution for Aircraft Groundspeed - " + drone_model +  " Anomaly Detection - " + str(
+        anomaly_detect)
+    plt.savefig("Plots/" + drone_model + "/" + str(anomaly_detect) + "/" + title + ".png", dpi=300,
+                bbox_inches='tight')
+    plt.show()
+
+    plt.figure()
+    plt.plot(drone_speed_discritised_d_LHR, pdf_drone_speed_d_LHR,'-b',label='Depart - LHR')
+    plt.plot(drone_speed_discritised_a_LHR, pdf_drone_speed_a_LHR,'--b',label='Arrival - LHR')
+    plt.plot(drone_speed_discritised_d_LGW, pdf_drone_speed_d_LGW,'-r',label='Depart - LGW')
+    plt.plot(drone_speed_discritised_a_LGW, pdf_drone_speed_a_LGW,'--r',label='Arrival - LGW')
+    plt.xlabel('Drone Groundspeed / knots')
+    plt.ylabel('Probability Density')
+    plt.legend()
+    plt.tight_layout()
+    title = "Normal Distribution for Drone Groundspeed - " + drone_model + " Anomaly Detection - " + str(
+        anomaly_detect)
+    plt.savefig("Plots/" + drone_model + "/" + str(anomaly_detect) + "/" + title + ".png", dpi=300,
+                bbox_inches='tight')
+    plt.show()
+
+
+    # airspeed_LHR = pd.DataFrame({"Depart" : normal_dist_d_LHR['aircraft_speed'], "Arrival": normal_dist_a_LHR['aircraft_speed']})
+    # new_test = pd.DataFrame({"LHR" : normal_dist_d_LHR['aircraft_speed'], "LGW": normal_dist_d_LGW['aircraft_speed']})
+    #
+    # ax = new_test[['LHR','LGW']].plot(kind='box', title='boxplot')
+    # plt.show()
+
+    # plt.figure()
+    # ax = plt.gca()
+    # ax.axes.get_yaxis().set_visible(False)
+    # #ax.xaxis.set_major_locator(ticker.MultipleLocator(1))  # Set smaller increment to 0.5
+    # plt.boxplot(normal_dist_d_LHR['aircraft_speed'], vert=False)
+    # plt.boxplot(normal_dist_a_LHR['aircraft_speed'],vert=False)
+    # plt.xlabel('Aircraft Groundspeed / m/s')
+    # plt.show()
+
+
+    return normal_dist_d_LHR,normal_dist_a_LHR,normal_dist_d_LGW,normal_dist_a_LGW
+
 
 def depart_arrival_comparison(airport,drone_model,anomaly_detect=0):
     distance_from_airport = np.arange(1.0, 5.5, 0.5).tolist()
@@ -216,7 +419,7 @@ def depart_arrival_comparison(airport,drone_model,anomaly_detect=0):
     plt.plot(discretised_distance, avg_col_percent_spline_a(discretised_distance), '-r', label="Arrival")
     plt.plot(distance_from_airport, all_avg_col_percent_arrive, 'ro')
     title = "Average Collision Percentage against Drone distance from Airport Center " + airport + " - " + drone_model + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Average Collision Percentage against Drone distance from Airport Center \n" + airport + " - " + drone_model + " Anomaly Detection - " + str(anomaly_detect))
+    #plt.title("Average Collision Percentage against Drone distance from Airport Center \n" + airport + " - " + drone_model + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision percentage / %")
     plt.legend()
@@ -256,7 +459,7 @@ def depart_arrival_comparison(airport,drone_model,anomaly_detect=0):
     plt.plot(discretised_distance_a, avg_time_fit_a(discretised_distance_a), '-r', label="Arrival")
     plt.plot(distance_from_airport_a, all_avg_time_arrive, 'ro')
     title = "Average Collision Time against Drone distance from Airport Center " + airport + " - " + drone_model + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Average Collision Time against Drone distance from Airport Center \n " + airport + " - " + drone_model + " Anomaly Detection - " + str(anomaly_detect))
+    #plt.title("Average Collision Time against Drone distance from Airport Center \n " + airport + " - " + drone_model + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision time / s")
     plt.legend()
@@ -276,7 +479,7 @@ def depart_arrival_comparison(airport,drone_model,anomaly_detect=0):
     plt.plot(discretised_distance_a, avg_altitude_fit_a(discretised_distance_a), '-r', label="Arrival")
     plt.plot(distance_from_airport_a, all_avg_altitude_arrive, 'ro')
     title = "Average Collision Altitude against Drone distance from Airport Center " + airport + " - " + drone_model + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Average Collision Altitude against Drone distance from Airport Center \n " + airport + " - " + drone_model + " Anomaly Detection - " + str(anomaly_detect))
+    #plt.title("Average Collision Altitude against Drone distance from Airport Center \n " + airport + " - " + drone_model + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision altitude / ft")
     plt.legend()
@@ -360,8 +563,8 @@ def drone_comparison(airport,anomaly_detect=0):
     plt.plot(distance_from_airport, all_avg_col_percent_depart_mavic, 'bo')
     plt.plot(discretised_distance, avg_col_percent_spline_d_mini(discretised_distance), '-r', label="Depart - Mini 2")
     plt.plot(distance_from_airport, all_avg_col_percent_depart_mini, 'rx')
-    title = "Comparison of Drone Models for Average Collision Percentage against  Drone distance from Airport Center " + airport + " - Depart" + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Comparison of Drone Models for Average Collision Percentage \n against  Drone distance from Airport Center \n " + airport + " - Depart" + " Anomaly Detection - " + str(anomaly_detect))
+    title = "Comparison of Drone Models for Average Collision Percentage against Drone distance from Airport Center " + airport + " - Depart" + " Anomaly Detection - " + str(anomaly_detect)
+    #plt.title("Comparison of Drone Models for Average Collision Percentage \n against  Drone distance from Airport Center \n " + airport + " - Depart" + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision percentage / %")
     plt.legend()
@@ -377,7 +580,7 @@ def drone_comparison(airport,anomaly_detect=0):
     plt.plot(discretised_distance, avg_col_percent_spline_a_mini(discretised_distance), '--r', label="Arrival - Mini 2")
     plt.plot(distance_from_airport, all_avg_col_percent_arrive_mini, 'rx')
     title = "Comparison of Drone Models for Average Collision Percentage against Drone distance from Airport Center " + airport + " - Arrival" + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Comparison of Drone Models for Average Collision Percentage \n against Drone distance from Airport Center \n" + airport + " - Arrival" + " Anomaly Detection - " + str(anomaly_detect))
+    #plt.title("Comparison of Drone Models for Average Collision Percentage \n against Drone distance from Airport Center \n" + airport + " - Arrival" + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision percentage / %")
     plt.legend()
@@ -447,8 +650,8 @@ def drone_comparison(airport,anomaly_detect=0):
     plt.plot(distance_from_airport_d_mini, all_avg_time_depart_mini, 'rx')
     plt.plot(discretised_distance_a_mini, avg_time_fit_a_mini(discretised_distance_a_mini), '--r', label="Arrival - Mini 2")
     plt.plot(distance_from_airport_a_mini, all_avg_time_arrive_mini, 'rx')
-    title = "Comparison of Drone Models for Average Collision Time  against Drone distance from Airport Center " + airport + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Comparison of Drone Models for Average Collision Time \n against Drone distance from Airport Center \n " + airport + " Anomaly Detection - " + str(anomaly_detect))
+    title = "Comparison of Drone Models for Average Collision Time against Drone distance from Airport Center " + airport + " Anomaly Detection - " + str(anomaly_detect)
+    #plt.title("Comparison of Drone Models for Average Collision Time \n against Drone distance from Airport Center \n " + airport + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision time / s")
     plt.legend()
@@ -474,7 +677,7 @@ def drone_comparison(airport,anomaly_detect=0):
     plt.plot(discretised_distance_a_mini, avg_altitude_fit_a_mini(discretised_distance_a_mini), '--r', label="Arrival - Mini 2")
     plt.plot(distance_from_airport_a_mini, all_avg_altitude_arrive_mini, 'rx')
     title = "Comparison of Drone Models for Average Collision Altitude against Drone distance from Airport Center " + airport + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Comparison of Drone Models for Average Collision Altitude \n against Drone distance from Airport Center \n " + airport + " Anomaly Detection - " + str(anomaly_detect))
+    #plt.title("Comparison of Drone Models for Average Collision Altitude \n against Drone distance from Airport Center \n " + airport + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision altitude / ft")
     plt.legend()
@@ -502,7 +705,7 @@ def drone_comparison(airport,anomaly_detect=0):
             plt.plot(drone_data_mini['drone_speed'].iloc[0:sim_index_mini[0]], drone_data_mini['aircraft_speed'].iloc[0:sim_index_mini[0]], 'rx')
 
     title = "Comparison of Drone Models Aircraft Groundspeed vs Drone Groundspeed for all Distances " + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Comparison of Drone Models Aircraft Groundspeed \n vs Drone Groundspeed for all Distances\n" + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect))
+    #plt.title("Comparison of Drone Models Aircraft Groundspeed \n vs Drone Groundspeed for all Distances\n" + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone Groundspeed / m/s")
     plt.ylabel("Aircraft Groundspeed / m/s")
     plt.legend(title='Drone Model',bbox_to_anchor=(1.01, 1), loc="upper left")
@@ -536,7 +739,7 @@ def drone_comparison(airport,anomaly_detect=0):
                      drone_data_mini['aircraft_speed'].iloc[0:sim_index_mini[0]], 'rx')
 
     title = "Comparison of Drone Models for Aircraft Groundspeed vs Drone Groundspeed for all Distances " + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect)
-    plt.title("Comparison of Drone Models for Aircraft Groundspeed \n vs Drone Groundspeed for all Distances\n" + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect))
+    #plt.title("Comparison of Drone Models for Aircraft Groundspeed \n vs Drone Groundspeed for all Distances\n" + airport + " - " + depart_arrive + " Anomaly Detection - " + str(anomaly_detect))
     plt.xlabel("Drone Groundspeed / m/s")
     plt.ylabel("Aircraft Groundspeed / m/s")
     plt.legend(title='Drone Model', bbox_to_anchor=(1.01, 1), loc="upper left")
@@ -591,15 +794,19 @@ def DBSCAN_Clustering(eps,min_sample,airport,distance_from_airport,drone_model,d
     # Plotting Clusters of collisions
     fig = plt.figure()
     ax1 = fig.add_subplot(projection='3d')
-    ax1.scatter(drone_data['longitude'], drone_data['latitude'], drone_data['altitude'], c=db.labels_)
+    ax1.scatter(drone_data['longitude'], drone_data['latitude'], drone_data['altitude'], c=db.labels_, label=db.labels_)
     title = "Clusters of Collisions between Aircraft and Drone " + airport + " " + depart_arrive + " Clusters - " + str(
         len(Counter(db.labels_)) - 1)
-    plt.title("Clusters of Collisions between Aircraft and Drone " + airport + " " + depart_arrive + "\nClusters: " + str(
-        len(Counter(db.labels_)) - 1))
+    #plt.title("Clusters of Collisions between Aircraft and Drone " + airport + " " + depart_arrive + "\nClusters: " + str(
+    #    len(Counter(db.labels_)) - 1))
     ax1.set_xlabel("Longitude / $\circ$")
     ax1.set_ylabel('Latitude / $\circ$')
     ax1.set_zlabel('Altitude / feet')
     ax1.ticklabel_format(useOffset=False)
+    plt.tight_layout()
+    plt.legend()
+    ax1.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     plt.savefig("Plots/" + airport + "/" + drone_model + "/" + "0" + "/" + title + ".png", dpi=300,
                 bbox_inches='tight')
     plt.show()
@@ -609,13 +816,15 @@ def DBSCAN_Clustering(eps,min_sample,airport,distance_from_airport,drone_model,d
         subplot_kw=dict(projection=OSGB())
     )
     airports[airport_code].plot(ax)
+    ax.add_feature(rivers(scale="50m"))
     plt.scatter(drone_data['longitude'], drone_data['latitude'],color='red', transform=ccrs.PlateCarree())
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
     title = "Areas of Collisions above " + airport + " - " + depart_arrive
-    plt.title(title)
+    #plt.title(title)
     ax.set_extent((bounds[0], bounds[2], bounds[1], bounds[3]))
     ax.title.set_fontsize(20)
+    plt.tight_layout()
     plt.savefig("Plots/" + airport + "/" + drone_model + "/" + "0" + "/" + title + ".png", dpi=300,
                 bbox_inches='tight')
     plt.show()
@@ -627,11 +836,12 @@ def DBSCAN_Clustering(eps,min_sample,airport,distance_from_airport,drone_model,d
     ax1 = fig.add_subplot(projection='3d')
     ax1.scatter(drone_data['longitude'], drone_data['latitude'], drone_data['altitude'], 'o', color='b')
     title = "Clusters of Collisions between Aircraft and Drone - " + airport + " " + depart_arrive + "without anomalies"
-    plt.title("Clusters of Collisions between Aircraft and Drone - " + airport + " " + depart_arrive + "\n without anomalies")
+    #plt.title("Clusters of Collisions between Aircraft and Drone - " + airport + " " + depart_arrive + "\n without anomalies")
     ax1.set_xlabel("Longitude / $\circ$")
     ax1.set_ylabel('Latitude / $\circ$')
     ax1.set_zlabel('Altitude / feet')
     ax1.ticklabel_format(useOffset=False)
+    plt.tight_layout()
     plt.savefig("Plots/" + airport + "/" + drone_model + "/" + "1" + "/" + title + ".png", dpi=300,
                 bbox_inches='tight')
     plt.show()
@@ -641,13 +851,15 @@ def DBSCAN_Clustering(eps,min_sample,airport,distance_from_airport,drone_model,d
         subplot_kw=dict(projection=OSGB())
     )
     airports[airport_code].plot(ax)
+    ax.add_feature(rivers(scale="50m"))
     plt.scatter(drone_data['longitude'], drone_data['latitude'],color='red', transform=ccrs.PlateCarree())
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
     title = "Areas of Collisions above " + airport + " - " + depart_arrive
-    plt.title(title)
+    #plt.title(title)
     ax.set_extent((bounds[0], bounds[2], bounds[1], bounds[3]))
     ax.title.set_fontsize(20)
+    plt.tight_layout()
     plt.savefig("Plots/" + airport + "/" + drone_model + "/" + "1" + "/" + title + ".png", dpi=300,
                 bbox_inches='tight')
     plt.show()
@@ -760,10 +972,10 @@ def airport_comparison(drone_model,anomaly_detect=0):
     plt.plot(distance_from_airport, all_avg_col_percent_depart_LHR, 'bo')
     plt.plot(discretised_distance, avg_col_percent_spline_d_LGW(discretised_distance), '-r', label="Depart - LGW")
     plt.plot(distance_from_airport, all_avg_col_percent_depart_LGW, 'rx')
-    title = "Comparison of Airports for Average Collision Percentage against  Drone distance from Airport Center " + drone_model + " - Depart" + " Anomaly Detection - " + str(
+    title = "Comparison of Airports for Average Collision Percentage against Drone distance from Airport Center " + drone_model + " - Depart" + " Anomaly Detection - " + str(
             anomaly_detect)
-    plt.title("Comparison of Airports for Average Collision Percentage \n against  Drone distance from Airport Center \n " + drone_model + " - Depart" + " Anomaly Detection - " + str(
-            anomaly_detect))
+    #plt.title("Comparison of Airports for Average Collision Percentage \n against  Drone distance from Airport Center \n " + drone_model + " - Depart" + " Anomaly Detection - " + str(
+    #        anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision percentage / %")
     plt.legend()
@@ -780,8 +992,8 @@ def airport_comparison(drone_model,anomaly_detect=0):
     plt.plot(distance_from_airport, all_avg_col_percent_arrive_LGW, 'rx')
     title = "Comparison of Airports for Average Collision Percentage against Drone distance from Airport Center " + drone_model + " - Arrival" + " Anomaly Detection - " + str(
             anomaly_detect)
-    plt.title("Comparison of Airports for Average Collision Percentage \n against Drone distance from Airport Center \n" + drone_model + " - Arrival" + " Anomaly Detection - " + str(
-            anomaly_detect))
+    #plt.title("Comparison of Airports for Average Collision Percentage \n against Drone distance from Airport Center \n" + drone_model + " - Arrival" + " Anomaly Detection - " + str(
+    #        anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision percentage / %")
     plt.legend()
@@ -855,11 +1067,11 @@ def airport_comparison(drone_model,anomaly_detect=0):
     plt.plot(distance_from_airport_a_LGW, all_avg_time_arrive_LGW, 'rx')
     title = "Comparison of Airports for Average Collision Time against Drone distance from Airport Center " + drone_model + " Anomaly Detection - " + str(
             anomaly_detect)
-    plt.title("Comparison of Airports for Average Collision Time \n against Drone distance from Airport Center \n " + drone_model + " Anomaly Detection - " + str(
-            anomaly_detect))
+    #plt.title("Comparison of Airports for Average Collision Time \n against Drone distance from Airport Center \n " + drone_model + " Anomaly Detection - " + str(
+    #        anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision time / s")
-    plt.legend()
+    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
     plt.tight_layout()
     plt.savefig("Plots/" + drone_model + "/" + str(anomaly_detect) + "/" + title + ".png", dpi=300,
                 bbox_inches='tight')
@@ -887,8 +1099,8 @@ def airport_comparison(drone_model,anomaly_detect=0):
     plt.plot(distance_from_airport_a_LGW, all_avg_altitude_arrive_LGW, 'rx')
     title = "Comparison of Airports for Average Collision Altitude against Drone distance from Airport Center " + drone_model + " Anomaly Detection - " + str(
             anomaly_detect)
-    plt.title("Comparison of Airports for Average Collision Altitude against \n Drone distance from Airport Center \n " + drone_model + " Anomaly Detection - " + str(
-            anomaly_detect))
+    #plt.title("Comparison of Airports for Average Collision Altitude against \n Drone distance from Airport Center \n " + drone_model + " Anomaly Detection - " + str(
+    #        anomaly_detect))
     plt.xlabel("Drone distance from center of airport / km")
     plt.ylabel("Average collision altitude / ft")
     plt.legend()
@@ -923,8 +1135,8 @@ def airport_comparison(drone_model,anomaly_detect=0):
 
     title = "Comparison of Airports for Aircraft Groundspeed vs Drone Groundspeed for all Distances " + drone_model + " - " + depart_arrive + " Anomaly Detection - " + str(
             anomaly_detect)
-    plt.title("Comparison of Airports for Aircraft Groundspeed \nvs Drone Groundspeed for all Distances\n" + drone_model + " - " + depart_arrive + " Anomaly Detection - " + str(
-            anomaly_detect))
+    #plt.title("Comparison of Airports for Aircraft Groundspeed \nvs Drone Groundspeed for all Distances\n" + drone_model + " - " + depart_arrive + " Anomaly Detection - " + str(
+    #        anomaly_detect))
     plt.xlabel("Drone Groundspeed / m/s")
     plt.ylabel("Aircraft Groundspeed / m/s")
     plt.legend(title='Airport', bbox_to_anchor=(1.01, 1), loc="upper left")
@@ -959,8 +1171,8 @@ def airport_comparison(drone_model,anomaly_detect=0):
 
     title = "Comparison of Airports for Aircraft Groundspeed vs Drone Groundspeed for all Distances " + drone_model + " - " + depart_arrive + " Anomaly Detection - " + str(
             anomaly_detect)
-    plt.title("Comparison of Airports for Aircraft Groundspeed \n vs Drone Groundspeed for all Distances\n" + drone_model + " - " + depart_arrive + " Anomaly Detection - " + str(
-            anomaly_detect))
+    #plt.title("Comparison of Airports for Aircraft Groundspeed \n vs Drone Groundspeed for all Distances\n" + drone_model + " - " + depart_arrive + " Anomaly Detection - " + str(
+    #        anomaly_detect))
     plt.xlabel("Drone Groundspeed / m/s")
     plt.ylabel("Aircraft Groundspeed / m/s")
     plt.legend(title='Airport', bbox_to_anchor=(1.01, 1), loc="upper left")
@@ -968,6 +1180,70 @@ def airport_comparison(drone_model,anomaly_detect=0):
     plt.savefig("Plots/" + drone_model + "/" + str(anomaly_detect) + "/" + title + ".png", dpi=300,
                 bbox_inches='tight')
     plt.show()
+
+def collision_points_on_aircraft(airport,drone_model,anomaly_detect=0):
+    distance_from_airport = np.arange(1.0, 1.5, 0.5).tolist()
+
+    # Aircraft sphere radius
+    aircraft_radius = 6.55
+
+    # Create a sphere mesh for visualization
+    u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(0, np.pi, 50)
+    x = aircraft_radius * np.outer(np.cos(u), np.sin(v))
+    y = aircraft_radius * np.outer(np.sin(u), np.sin(v))
+    z = aircraft_radius * np.outer(np.ones(np.size(u)), np.cos(v))
+
+    # Create a figure and axes
+    fig = plt.figure()
+    ax = plt.figure().add_subplot(projection='3d')
+
+    # Plot the sphere surface
+    ax.plot_surface(x, y, z, color='b', alpha=0.3)
+
+    for i in range(0, len(distance_from_airport)):
+        distance = str(distance_from_airport[i])
+        _, _, _, drone_data, _, sim_index, _ = data_access(airport, distance, drone_model, "Depart",anomaly_detect)
+        # Plot the collision point
+        ax.scatter(drone_data['collision_x'].iloc[sim_index[-1]:len(drone_data['collision_x'])],drone_data['collision_y'].iloc[sim_index[-1]:len(drone_data['collision_y'])], drone_data['collision_z'].iloc[sim_index[-1]:len(drone_data['collision_z'])],color='r')
+
+    color_tuple = (1.0, 1.0, 1.0, 0.0)
+    ax.w_xaxis.set_pane_color(color_tuple)
+    #ax.w_yaxis.set_pane_color(color_tuple)
+    #ax.w_zaxis.set_pane_color(color_tuple)
+    ax.w_xaxis.line.set_color(color_tuple)
+    #ax.w_yaxis.line.set_color(color_tuple)
+    #ax.w_zaxis.line.set_color(color_tuple)
+
+    ax.set_xticks([])
+    #ax.set_yticks([])
+    #ax.set_zticks([])
+
+    # Set axis labels
+    #ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    # Hide the X-axis
+    # Hide the X-axis
+
+
+    # Set plot limits
+    max_range = np.max([np.max(x), np.max(y), np.max(z)])
+    ax.set_xlim(-max_range, max_range)
+    ax.set_ylim(-max_range, max_range)
+    ax.set_zlim(-max_range, max_range)
+
+    # Set the view angle
+    ax.view_init(elev=0, azim=0)
+    ax.yaxis.labelpad = 10
+
+    # Add a legend
+    #ax.legend()
+    # Show the plot
+    plt.tight_layout()
+    plt.show(dpi=300,bbox_inches='tight')
+
 
 def make_dir():
     parent_dir = "Plots/"
@@ -1012,10 +1288,56 @@ def make_dir():
 
 make_dir()
 
-airport = "LGW"
+airport = "LHR"
 distance_from_airport = "1.0"
 drone_model = 'Mavic_3' # Either 'Mavic_3' or 'Mini_2'
-depart_arrive = "Arrival" # Either "Depart" or "Arrival"
+depart_arrive = "Depart" # Either "Depart" or "Arrival"
+
+
+#test = normal_distribution(airport,drone_model,anomaly_detect=1)
+#normal_dist_d_LHR,normal_dist_a_LHR,normal_dist_d_LGW,normal_dist_a_LGW = normal_distribution("Mavic_3",anomaly_detect=1)
+
+"""
+# AIRCRAFT
+q2_aircraft_speed_d_LHR = normal_dist_d_LHR['aircraft_speed'].quantile(0.5)
+q3_aircraft_speed_d_LHR = normal_dist_d_LHR['aircraft_speed'].quantile(0.75)
+q95_aircraft_speed_d_LHR = normal_dist_d_LHR['aircraft_speed'].quantile(0.95)
+q99_aircraft_speed_d_LHR = normal_dist_d_LHR['aircraft_speed'].quantile(0.99)
+q2_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].quantile(0.5)
+q3_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].quantile(0.75)
+q95_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].quantile(0.95)
+q99_aircraft_speed_a_LHR = normal_dist_a_LHR['aircraft_speed'].quantile(0.99)
+
+q2_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].quantile(0.5)
+q3_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].quantile(0.75)
+q95_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].quantile(0.95)
+q99_aircraft_speed_d_LGW = normal_dist_d_LGW['aircraft_speed'].quantile(0.99)
+q2_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].quantile(0.5)
+q3_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].quantile(0.75)
+q95_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].quantile(0.95)
+q99_aircraft_speed_a_LGW = normal_dist_a_LGW['aircraft_speed'].quantile(0.99)
+
+# DRONE
+q2_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].quantile(0.5)
+q3_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].quantile(0.75)
+q95_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].quantile(0.95)
+q99_drone_speed_d_LHR = normal_dist_d_LHR['drone_speed'].quantile(0.99)
+q2_drone_speed_a_LHR = normal_dist_a_LHR['drone_speed'].quantile(0.5)
+q3_drone_speed_a_LHR = normal_dist_a_LHR['drone_speed'].quantile(0.75)
+q95_drone_speed_a_LHR = normal_dist_a_LHR['drone_speed'].quantile(0.95)
+q99_drone_speed_a_LHR = normal_dist_a_LHR['drone_speed'].quantile(0.99)
+
+q2_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].quantile(0.5)
+q3_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].quantile(0.75)
+q95_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].quantile(0.95)
+q99_drone_speed_d_LGW = normal_dist_d_LGW['drone_speed'].quantile(0.99)
+q2_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].quantile(0.5)
+q3_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].quantile(0.75)
+q95_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].quantile(0.95)
+q99_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].quantile(0.99)
+"""
+
+#collision_points_on_aircraft("LHR","Mavic_3",anomaly_detect=1)
 
 #sim_run_comparison(airport,distance_from_airport,drone_model,depart_arrive)
 #sim_run_comparison(airport,distance_from_airport,drone_model,depart_arrive,anomaly_detect=1)
@@ -1024,10 +1346,11 @@ depart_arrive = "Arrival" # Either "Depart" or "Arrival"
 #DBSCAN_Clustering(30,40,"LHR",distance_from_airport,drone_model,"Arrival")
 
 #distance_comparison(airport,drone_model,depart_arrive)
-#distance_comparison("LGW",drone_model,"Depart",anomaly_detect=0)
+distance_comparison("LHR","Mini_2","Depart",anomaly_detect=1)
+#distance_comparison("LGW",drone_model,"Arrival",anomaly_detect=1)
 
-depart_arrival_comparison("LHR",drone_model)
-#depart_arrival_comparison(airport,drone_model,anomaly_detect=1)
+#depart_arrival_comparison("LHR",drone_model,anomaly_detect=1)
+#depart_arrival_comparison("LGW",drone_model,anomaly_detect=1)
 
 #drone_comparison("LHR")
 #drone_comparison("LHR",anomaly_detect=1)

@@ -1,4 +1,4 @@
-run_number,longitude,latitude,altitude,drone_speed,drone_index,aircraft_index,aircraft_speed,time
+run_number,longitude,latitude,altitude,drone_speed,drone_index,aircraft_index,aircraft_speed,collision_x,collision_y,collision_z,time
 0,Local Collision Number,0
 
 1,Local Collision Number,0
@@ -19,8 +19,9 @@ run_number,longitude,latitude,altitude,drone_speed,drone_index,aircraft_index,ai
 
 9,Local Collision Number,0
 
+Total time duration in seconds,2078
 Total Collision Number,0
-Total simulation runs,3.93934e+08
+Total simulation runs,3.93752e+08
 Total Monte-Carlo runs,10
 Average number of Collisions per Monte-Carlo run,0
 Average percentage of collision,0

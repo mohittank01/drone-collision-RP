@@ -5,6 +5,7 @@
 #include <boost/program_options.hpp>
 #include <iomanip>
 #include <sstream>
+#include <chrono>
 
 namespace po = boost::program_options;
 using namespace std;
@@ -58,7 +59,7 @@ int main(int argc, char* argv[]){
     }
   }
   int no_col_aircraft = 22; // Total number of  Columns in Aircraft CSV file
-  double aircraft_radius = 5.75; // Frontal Area of aircraft (A320ceo) - distance from engine to centre line 
+  double aircraft_radius = 6.55; // Frontal Area of aircraft (A320ceo) - distance from engine edge to centre line 
 
   string FilePath_drone = Airport + "/drone_inital_positions_" + distance_from_airport + "km.csv"; /// THIS CHANGES EVERYTHING
   int no_col_drone = 4; // Total number of columns in Drone CSV file
@@ -77,7 +78,11 @@ int main(int argc, char* argv[]){
   Aircraft.Set_Parameters_and_Data(FilePath_aircraft, no_col_aircraft);
   Drone.Average_ClearOutput_1File(distance_from_airport, Airport, DroneModel, depart_or_arrive);
   Drone.CSVData(FilePath_drone);
+  
+  // Start Timer
+  chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 
+  
   for(int run_number=0; run_number < max_run_number; ++run_number){
     int i;
     double* local_collisions = new double[1];
@@ -94,5 +99,10 @@ int main(int argc, char* argv[]){
     Drone.AverageOutputFile_LocalCollision(Airport, DroneModel, local_collisions, distance_from_airport, run_number, depart_or_arrive);
     cout << "Number of collisions: " << *local_collisions << endl;
   }
-  Drone.AverageOutputFile_TotalCollision(Airport, DroneModel, total_collisions, distance_from_airport, total_sims, max_run_number, depart_or_arrive);
+  
+  // End Timer
+  chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
+
+  chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+  Drone.AverageOutputFile_TotalCollision(Airport, DroneModel, total_collisions, distance_from_airport, total_sims, max_run_number, depart_or_arrive, duration);
  }
