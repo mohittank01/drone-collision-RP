@@ -12,6 +12,8 @@ import cartopy.feature
 from cartopy.mpl.patch import geos_to_path
 import cartopy.crs as ccrs
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.animation as animation
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3DCollection
 import matplotlib.ticker as ticker
 from collections import Counter
 import itertools
@@ -1285,13 +1287,116 @@ def make_dir():
     except OSError as error:
         print("ERROR in making directory")
 
+def trajectory_plotting(airport, distance_from_airport, drone_model, depart_arrive):
+    drone_data = pd.read_csv(airport + "/Drone_Collisions_" + distance_from_airport + "_km/" + drone_model + "/" + depart_arrive + "/All_Drone_Collisions.csv")
+    if(depart_arrive == "Depart"):
+        aircraft_data = pd.read_csv(airport + "/TAKEOFF_UTM_DEPART_A320 LHR time - 2017-06-30 04-00 to 2017-06-30 23-45.csv")
+    if(depart_arrive == "Arrival"):
+        aircraft_data = pd.read_csv(airport + "/LANDING_UTM_ARRIVE_A320 LHR time - 2017-06-30 04-00 to 2017-06-30 23-45.csv")
+
+    aircraft_sim_index = []
+    aircraft_sim_index.append(0)
+    drone_sim_index = []
+    for i in range(0,len(drone_data['aircraft_speed'])):
+        if drone_data['aircraft_speed'].iloc[i] == 0.0:
+            drone_sim_index.append(i)
+
+    for i in range(1, len(aircraft_data['callsign'])):
+        if aircraft_data['callsign'].iloc[i] != aircraft_data['callsign'].iloc[i - 1]:
+            aircraft_sim_index.append(i)
+
+    aircraft_sim_index.append(i+1)
+
+    # FOR ONE COLLSION
+    drone_index_range = range(drone_sim_index[0],drone_sim_index[1])
+
+    drone_long = list(drone_data['longitude'].iloc[drone_index_range])
+    drone_lat = list(drone_data['latitude'].iloc[drone_index_range])
+    drone_alt = list(drone_data['altitude'].iloc[drone_index_range])
+
+    aircraft_col_index = drone_data['aircraft_index'].iloc[drone_index_range[0]]
+    aircraft_index_range = range(aircraft_sim_index[aircraft_col_index],aircraft_sim_index[aircraft_col_index+1])
+    aircraft_long = list(aircraft_data['longitude'].iloc[aircraft_index_range])
+    aircraft_lat = list(aircraft_data['latitude'].iloc[aircraft_index_range])
+    aircraft_alt = list(aircraft_data['altitude'].iloc[aircraft_index_range])
+
+    collision_index = 0
+    # Work out collision index
+    drone_collision = list(drone_data['collision?'].iloc[drone_index_range])
+    for i in range(0,len(drone_collision)):
+        if drone_collision[i] == 1:
+            collision_index = i
+
+
+
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plot the initial drone and aircraft trajectories
+    ax.plot3D(drone_long, drone_lat, drone_alt, label='Drone')
+    ax.plot3D(aircraft_long, aircraft_lat, aircraft_alt, label='Aircraft')
+
+    ax.set_xlabel('Longitude')
+    ax.set_ylabel('Latitude')
+    ax.set_zlabel('Altitude')
+    ax.set_title('Trajectories of Drone and Aircraft')
+
+    ax.set_xlim([min(min(drone_long),min(aircraft_long)), max(max(drone_long),max(aircraft_long))])
+    ax.set_ylim([min(min(drone_lat),min(aircraft_lat)), max(max(drone_lat),max(aircraft_lat))])
+    ax.set_zlim([min(min(drone_alt),min(aircraft_alt)), max(max(drone_alt),max(aircraft_alt))])
+
+
+    for i in range(len(drone_long)):
+        # Clear the plot
+        ax.cla()
+
+        # Plot the drone trajectory up to the current time step
+        ax.plot3D(drone_long[:i + 1], drone_lat[:i + 1], drone_alt[:i + 1], label='Drone')
+
+        # Plot the aircraft trajectory up to the current time step
+        ax.plot3D(aircraft_long[:i + 1], aircraft_lat[:i + 1], aircraft_alt[:i + 1], label='Aircraft')
+
+        # Plot the drone as a sphere at the current position
+        ax.scatter3D(drone_long[i], drone_lat[i], drone_alt[i], s=50, color='blue', marker='o',
+                   label='Drone')
+
+        # Plot the aircraft as a sphere at the current position
+        ax.scatter3D(aircraft_long[i], aircraft_lat[i], aircraft_alt[i], s=50, color='red', marker='o',
+                   label='Aircraft')
+
+        # Set labels and title
+        ax.set_xlabel('Longitude')
+        ax.set_ylabel('Latitude')
+        ax.set_zlabel('Altitude')
+        ax.set_title('Trajectories of Drone and Aircraft')
+        ax.set_xlim([min(min(drone_long), min(aircraft_long)), max(max(drone_long), max(aircraft_long))])
+        ax.set_ylim([min(min(drone_lat), min(aircraft_lat)), max(max(drone_lat), max(aircraft_lat))])
+        ax.set_zlim([min(min(drone_alt), min(aircraft_alt)), max(max(drone_alt), max(aircraft_alt))])
+
+        #plt.pause(0.000001)
+
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
 
 make_dir()
 
 airport = "LHR"
-distance_from_airport = "1.0"
+distance_from_airport = "5.0"
 drone_model = 'Mavic_3' # Either 'Mavic_3' or 'Mini_2'
 depart_arrive = "Depart" # Either "Depart" or "Arrival"
+
+drone = trajectory_plotting(airport,distance_from_airport,drone_model,depart_arrive)
 
 
 #test = normal_distribution(airport,drone_model,anomaly_detect=1)
@@ -1346,7 +1451,7 @@ q99_drone_speed_a_LGW = normal_dist_a_LGW['drone_speed'].quantile(0.99)
 #DBSCAN_Clustering(30,40,"LHR",distance_from_airport,drone_model,"Arrival")
 
 #distance_comparison(airport,drone_model,depart_arrive)
-distance_comparison("LHR","Mini_2","Depart",anomaly_detect=1)
+#distance_comparison("LHR","Mini_2","Depart",anomaly_detect=1)
 #distance_comparison("LGW",drone_model,"Arrival",anomaly_detect=1)
 
 #depart_arrival_comparison("LHR",drone_model,anomaly_detect=1)

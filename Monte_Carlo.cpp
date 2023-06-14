@@ -76,7 +76,8 @@ int main(int argc, char* argv[]){
   Drone Drone;
 
   Aircraft.Set_Parameters_and_Data(FilePath_aircraft, no_col_aircraft);
-  Drone.Average_ClearOutput_1File(distance_from_airport, Airport, DroneModel, depart_or_arrive);
+  //Drone.Average_ClearOutput_1File(distance_from_airport, Airport, DroneModel, depart_or_arrive);
+  Drone.ClearOutput_1File(distance_from_airport, Airport, DroneModel, depart_or_arrive);
   Drone.CSVData(FilePath_drone);
   
   // Start Timer
@@ -96,7 +97,7 @@ int main(int argc, char* argv[]){
       }
       Aircraft.Deallocation();
     }
-    Drone.AverageOutputFile_LocalCollision(Airport, DroneModel, local_collisions, distance_from_airport, run_number, depart_or_arrive);
+    //Drone.AverageOutputFile_LocalCollision(Airport, DroneModel, local_collisions, distance_from_airport, run_number, depart_or_arrive);
     cout << "Number of collisions: " << *local_collisions << endl;
   }
   
@@ -104,5 +105,6 @@ int main(int argc, char* argv[]){
   chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
 
   chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
-  Drone.AverageOutputFile_TotalCollision(Airport, DroneModel, total_collisions, distance_from_airport, total_sims, max_run_number, depart_or_arrive, duration);
+  //Drone.AverageOutputFile_TotalCollision(Airport, DroneModel, total_collisions, distance_from_airport, total_sims, max_run_number, depart_or_arrive, duration);
+  Drone.Output_1File_Collision_Num(total_collisions, distance_from_airport, Airport, DroneModel, depart_or_arrive);
  }

@@ -46,7 +46,7 @@ class Drone{
     bool Collision();
     void EstimateCollisionPoint(int i);
     void Output(int run_no, string distance_from_airport);
-    void Output_1File(int run_no, string distance_from_airport);
+    void Output_1File(string distance_from_airport, string drone_model_input);
     void Deallocate();
 
     double* aircraft_longitude;
@@ -102,8 +102,8 @@ class Drone{
     void Simulation(int number_sims, double* total_collisions, double* local_collisions, string distance_from_airport, int run_number, double* total_sims);
     void Output_Collision_Num(double* local_collisions, string distance_from_airport);
     void ClearOutput(int Aircraft_Index, string distance_from_airport, string Airport_input, int depart_or_arrive);
-    void ClearOutput_1File(string distance_from_airport, string Airport_input, int depart_or_arrive);
-    void Output_1File_Collision_Num(double* total_collisions, string distance_from_airport, string Airport_input, int depart_or_arrive);
+    void ClearOutput_1File(string distance_from_airport, string Airport_input, string drone_model_input, int depart_or_arrive);
+    void Output_1File_Collision_Num(double* total_collisions, string distance_from_airport, string Airport_input, string drone_model_input, int depart_or_arrive);
     void Average_ClearOutput_1File(string distance_from_airport, string Airport_input, string drone_model_input, int depart_or_arrive);
     void AverageOutputFile(string distance_from_airport, int run_number);
     void AverageOutputFile_LocalCollision(string Airport_input, string drone_model_input, double* local_collisions, string distance_from_airport, int run_number, int depart_or_arrive);
